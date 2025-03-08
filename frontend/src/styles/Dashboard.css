@@ -1,0 +1,42 @@
+/* Center the entire page */
+.dashboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #121212;
+  }
+  
+  /* Make content look better */
+  .dashboard-content {
+    background: #1e1e1e;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    color: white;
+    width: 400px;
+  }
+  
+  /* Character box */
+  .character-box {
+    margin-top: 20px;
+    padding: 1rem;
+    border-radius: 8px;
+    background: #2a2a2a;
+  }
+  
+  .btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 5px;
+  }
+  
+  .btn:hover {
+    background: #0056b3;
+  }
+  
