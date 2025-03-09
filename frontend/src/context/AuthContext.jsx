@@ -12,15 +12,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    console.log("Im logging")
     const res = await api.login(email, password);
     setUser(res.user);
     localStorage.setItem("user", JSON.stringify(res.user));
   };
 
   const register = async (username, email, password) => {
-    console.log("Im logging")
-    const res = await api.login(username, email, password);
+    const res = await api.register(username, email, password);
     setUser(res.user);
     localStorage.setItem("user", JSON.stringify(res.user));
   };

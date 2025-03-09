@@ -14,9 +14,9 @@ export default function Login() {
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-content">
-        <h2>Login</h2>
+    <div className="auth-container">
+      <h2>Login</h2>
+      <form onSubmit={handleLogin}>
         <input
           type="email"
           placeholder="Email"
@@ -31,12 +31,15 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button onClick={handleLogin}>Login</button>
-        <p>Don't have an account?</p>
-        <Link to="/register" className="register-button">
-          Register Here
-        </Link>
-      </div>
+        <button type="submit">
+          Login
+        </button>
+      </form>
+
+      <p>Don't have an account?</p>
+      <Link to="/register" className="register-button">
+        Register Here
+      </Link>
     </div>
   );
 }

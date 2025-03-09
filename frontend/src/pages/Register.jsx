@@ -26,16 +26,14 @@ export default function Register() {
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-content">
-        <h2>Register</h2>
-        <form onSubmit={handleRegister}>
-          <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} required />
-          <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />
-          <button type="submit">Register</button>
-        </form>
-      </div>
+    <div className="auth-container">
+      <h2>Register</h2>
+      <form onSubmit={handleRegister}>
+        <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} required />
+        <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} required />
+        <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} required />
+        <button type="submit">Register</button>
+      </form>
     </div>
   );
 }
