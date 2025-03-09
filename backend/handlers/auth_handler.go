@@ -6,18 +6,12 @@ import (
   "os"
   "time"
   "encoding/json"
-  "encoding/hex"
-  "crypto/rand"
-  "net/http"
-  "net/url"
-  "errors"
   "fmt"
 
   "github.com/gofiber/fiber/v2"
   "github.com/golang-jwt/jwt/v5"
   "golang.org/x/crypto/bcrypt"
   "github.com/joho/godotenv"
-  "github.com/jackc/pgx/v4"
 
   "github.com/kamilkulczyk/rolepagegame/config"
   "github.com/kamilkulczyk/rolepagegame/models"
