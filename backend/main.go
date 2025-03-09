@@ -23,7 +23,5 @@ func main() {
 
   routes.SetupRoutes(app)
 
-  go events.ListenForProductNotifications()
-
   log.Fatal(app.Listen(":3000"))
 }
