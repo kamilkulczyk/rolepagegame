@@ -13,6 +13,9 @@ const fakeApi = {
   getCharacter: async (userId) => {
     return { id: 1, name: "Hero", items: [] };
   },
+  createCharacter: async (name) => {
+    return { id: 1, name: "Hero", items: [] };
+  },
   createItem: async (characterId, itemName) => {
     const newItem = { id: Math.random(), name: itemName };
     let character = JSON.parse(localStorage.getItem("character"));
