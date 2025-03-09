@@ -5,7 +5,6 @@ import (
   "log"
   "os"
   "time"
-  "encoding/json"
   "fmt"
 
   "github.com/gofiber/fiber/v2"
