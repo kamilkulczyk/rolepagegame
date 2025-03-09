@@ -5,21 +5,41 @@ import ItemCard from "../components/ItemCard";
 import "../styles/Dashboard.css";
 
 export default function Dashboard() {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [character, setCharacter] = useState(null);
   const navigate = useNavigate();
+  const [shouldNavigateLogin, setShouldNavigateLogin] = useState(false);
+  const [shouldNavigateCreateCharacter, setShouldNavigateCreateCharacter] = useState(false);
 
   useEffect(() => {
+    if (!user) {
+      setShouldNavigateLogin(true);
+      return;
+    }
+
     const storedCharacter = localStorage.getItem("character");
     if (storedCharacter) {
       setCharacter(JSON.parse(storedCharacter));
     } else {
-      navigate("/create-character");
+      setShouldNavigateCreateCharacter(true);
     }
-  }, [navigate]);
+  }, [user]);
 
-  if (!user) {
-    navigate("/");
+  useEffect(() => {
+    if (shouldNavigateLogin) {
+      navigate("/");
+      setShouldNavigateLogin(false);
+    }
+  }, [shouldNavigateLogin, navigate]);
+
+  useEffect(() => {
+    if (shouldNavigateCreateCharacter) {
+      navigate("/create-character");
+      setShouldNavigateCreateCharacter(false);
+    }
+  }, [shouldNavigateCreateCharacter, navigate]);
+
+  if (shouldNavigateLogin || shouldNavigateCreateCharacter) {
     return null;
   }
 
@@ -27,7 +47,7 @@ export default function Dashboard() {
     <div className="dashboard-container">
       <div className="dashboard-content">
         <h2>Dashboard</h2>
-        <p>Welcome, {user.username}!</p>
+        <p>Welcome, {user?.username}!</p>
 
         {character ? (
           <div className="character-box">
@@ -36,9 +56,7 @@ export default function Dashboard() {
             <ul>
               {character.items.length > 0 ? (
                 character.items.map((item) => (
-                  <ItemCard key={item.id}
-                  item={item}
-                  />
+                  <ItemCard key={item.id} item={item} />
                 ))
               ) : (
                 <p>No items yet.</p>

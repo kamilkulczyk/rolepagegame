@@ -21,15 +21,17 @@ export default function ItemCreation() {
   };
 
   return (
-    <div>
-      <h2>Create an Item</h2>
-      <input 
+    <div className="dashboard-container">
+      <div className="dashboard-content">
+        <h2>Create an Item</h2>
+        <input 
         type="text" 
         placeholder="Item Name" 
         value={itemName} 
         onChange={(e) => setItemName(e.target.value)} 
-      />
-      <button onClick={handleCreateItem}>Create Item</button>
+        />
+        <button onClick={handleCreateItem}>Create Item</button>
+      </div>
     </div>
   );
 }

@@ -9,19 +9,21 @@ export default function Login() {
 
   const handleLogin = async () => {
     await login(username, "password");
-    navigate("/dashboard"); // Redirect after login
+    navigate("/");
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <input 
-        type="text" 
-        placeholder="Username" 
-        value={username} 
-        onChange={(e) => setUsername(e.target.value)} 
-      />
-      <button onClick={handleLogin}>Login</button>
+    <div className="dashboard-container">
+      <div className="dashboard-content">
+        <h2>Login</h2>
+        <input 
+          type="text" 
+          placeholder="Username" 
+          value={username} 
+          onChange={(e) => setUsername(e.target.value)} 
+        />
+        <button onClick={handleLogin}>Login</button>
+      </div>
     </div>
   );
 }
