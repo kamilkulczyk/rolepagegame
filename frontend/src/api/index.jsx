@@ -1,8 +1,12 @@
 const isDev = import.meta.env.MODE === "development";
-const API_URL = isDev ? "/fakeApi" : "https://your-real-api.com";
+const API_URL = isDev ? "/fakeApi" : import.meta.env.VITE_API_URL;
+console.log("api = " + API_URL)
 
 const fakeApi = {
-  login: async (username, password) => {
+  login: async (email, password) => {
+    return { token: "fake-jwt-token", user: { id: 1, email } };
+  },
+  register: async (username, email, password) => {
     return { token: "fake-jwt-token", user: { id: 1, username } };
   },
   getCharacter: async (userId) => {
@@ -18,13 +22,61 @@ const fakeApi = {
 };
 
 const realApi = {
-  login: async (username, password) => {
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
-    return res.json();
+  login: async (email, password) => {
+    const encoder = new TextEncoder();
+    const passwordBytes = encoder.encode(password);
+    try {
+      const response = await axios.post(`${API_URL}/login`, {
+        email,
+        password: Array.from(passwordBytes),
+      });
+      return response.data;
+  
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        };
+      }
+    }
+  },
+  register: async (username, email, password) => {
+    const encoder = new TextEncoder();
+    const passwordBytes = encoder.encode(password);
+  
+    try {
+      const response = await axios.post(`${API_URL}/register`, {
+        username,
+        email,
+        password: Array.from(passwordBytes),
+      });
+      return response.data;
+  
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        };
+      }
+    }
   },
   getCharacter: async (userId) => {
     const res = await fetch(`${API_URL}/character/${userId}`);

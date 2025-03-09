@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CharacterCreation from "./pages/CharacterCreation";
 import ItemCreation from "./pages/ItemCreation";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Dashboard />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-character" element={<CharacterCreation />} />

@@ -11,9 +11,16 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const login = async (username, password) => {
+  const login = async (email, password) => {
     console.log("Im logging")
-    const res = await api.login(username, password);
+    const res = await api.login(email, password);
+    setUser(res.user);
+    localStorage.setItem("user", JSON.stringify(res.user));
+  };
+
+  const register = async (username, email, password) => {
+    console.log("Im logging")
+    const res = await api.login(username, email, password);
     setUser(res.user);
     localStorage.setItem("user", JSON.stringify(res.user));
   };
@@ -24,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

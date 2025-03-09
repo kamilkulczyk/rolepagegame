@@ -1,14 +1,15 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    await login(username, "password");
+    await login(email, password);
     navigate("/");
   };
 
@@ -16,13 +17,25 @@ export default function Login() {
     <div className="dashboard-container">
       <div className="dashboard-content">
         <h2>Login</h2>
-        <input 
-          type="text" 
-          placeholder="Username" 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)} 
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button onClick={handleLogin}>Login</button>
+        <p>Don't have an account?</p>
+        <Link to="/register" className="register-button">
+          Register Here
+        </Link>
       </div>
     </div>
   );
