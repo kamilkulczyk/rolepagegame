@@ -8,13 +8,23 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    
+    try {
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+    }
   }, []);
 
   const login = async (email, password) => {
     const res = await api.login(email, password);
     setUser(res.user);
     localStorage.setItem("user", JSON.stringify(res.user));
+    localStorage.setItem("token", res.token);
   };
 
   const register = async (username, email, password) => {
@@ -24,8 +34,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
   };
 
   return (

@@ -8,9 +8,19 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    await login(email, password);
-    navigate("/");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await login(email, password);
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed:", error);
+      if (error.status) {
+        alert(`Server error: ${error.status} - ${JSON.stringify(error.data)}`);
+      } else {
+        alert(`Login error: ${error.message}`);
+      }
+    }
   };
 
   return (
