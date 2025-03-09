@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev ? "/fakeApi" : import.meta.env.VITE_API_URL;
 console.log("api = " + API_URL)
