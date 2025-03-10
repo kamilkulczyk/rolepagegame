@@ -13,8 +13,8 @@ const fakeApi = {
   getCharacter: async (userId) => {
     return { id: 1, name: "Hero", items: [] };
   },
-  createCharacter: async (name) => {
-    return { id: 1, name: "Hero", items: [] };
+  createCharacter: async (formData) => {
+    return { id: 1, name: formData.name, items: [] };
   },
   createItem: async (characterId, itemName) => {
     const newItem = { id: Math.random(), name: itemName };
@@ -94,13 +94,28 @@ const realApi = {
     });
     return res.json();
   },
-  createCharacter: async (name) => {
-    const res = await fetch(`${API_URL}/character`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-    return res.json();
+  createCharacter: async (formData) => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const response = await axios.post(`${API_URL}/create-character`, formData, { headers });
+      return response.json();
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        }
+      }
+    }
   },
 };
 
