@@ -9,5 +9,5 @@ import (
 
 func CharacterRoutes(app *fiber.App) {
   app.Post("/create-character", middlewares.JWTMiddleware(), handlers.CreateCharacter)
-  app.Get("/characters", handlers.GetCharacter)
+  app.Get("/characters", handlers.GetCharacters)
 }
