@@ -15,7 +15,7 @@ func CreateCharacter(c *fiber.Ctx) error {
 	conn, err := db.Acquire(context.Background())
 	if err != nil {
 		fmt.Println("Failed to acquire DB connection:", err)
-		return c.Statuses(500).JSON
+		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
 	}
 	defer conn.Release()
 
@@ -51,7 +51,7 @@ func GetCharacters(c *fiber.Ctx) error {
 	conn, err := db.Acquire(context.Background())
 	if err != nil {
 		fmt.Println("Failed to acquire DB connection:", err)
-		return c.Statuses(500).JSON
+		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
 	}
 	defer conn.Release()
 
@@ -65,7 +65,7 @@ func GetCharacters(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	var character []models.Character
+	var characters []models.Character
 	for rows.Next() {
 		var character models.Character
 
