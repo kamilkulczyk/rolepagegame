@@ -32,7 +32,7 @@ func CreateCharacter(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	var characterID
+	var characterID int
 	err = conn.QueryRow(context.Background(),
 		"INSERT INTO characters (name, description, user_id) VALUES ($1, $2, $3) RETURNING id",
 		character.Name, character.Description, userID,
