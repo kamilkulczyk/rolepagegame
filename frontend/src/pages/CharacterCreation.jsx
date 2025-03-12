@@ -42,7 +42,7 @@ export default function CharacterCreation() {
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)} required />
-          <button type="submit" onClick={handleCreateCharacter}>Create Character</button>
+          <button type="submit">Create Character</button>
         </form>
     </div>
   );

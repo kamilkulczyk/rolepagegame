@@ -13,8 +13,15 @@ const fakeApi = {
   getCharacter: async (userId) => {
     return { id: 1, name: "Hero", items: [] };
   },
+  getCharacters: async () => {
+    return JSON.parse(localStorage.getItem("characters") || "[]");
+  },  
   createCharacter: async (formData) => {
-    return { id: 1, name: formData.name, items: [] };
+    const existingCharacters = JSON.parse(localStorage.getItem("characters")) || [];
+    const newCharacter = {id: Date.now(), name: formData.name, description: formData.description,};
+    const updatedCharacters = [...existingCharacters, newCharacter];
+    localStorage.setItem("characters", JSON.stringify(updatedCharacters));
+    return;
   },
   createItem: async (characterId, itemName) => {
     const newItem = { id: Math.random(), name: itemName };
@@ -86,6 +93,27 @@ const realApi = {
     const res = await fetch(`${API_URL}/character/${userId}`);
     return res.json();
   },
+  getCharacters: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/characters`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        }
+      }
+    }
+  },
   createItem: async (characterId, itemName) => {
     const res = await fetch(`${API_URL}/items`, {
       method: "POST",
@@ -99,7 +127,7 @@ const realApi = {
     const headers = { Authorization: `Bearer ${token}` };
     try {
       const response = await axios.post(`${API_URL}/create-character`, formData, { headers });
-      return response.json();
+      return response.data;
     } catch (error) {
       if (error.response) {
         throw {

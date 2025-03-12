@@ -1,74 +1,60 @@
-import { useContext, useEffect, useState } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import ItemCard from "../components/ItemCard";
+import { useEffect, useState } from "react";
+import { api } from "../api";
+import CharacterCard from "../components/CharacterCard";
 import "../styles/Dashboard.css";
 
 export default function Dashboard() {
-  const { user } = useContext(AuthContext);
-  const [character, setCharacter] = useState(null);
-  const navigate = useNavigate();
-  const [shouldNavigateLogin, setShouldNavigateLogin] = useState(false);
-  const [shouldNavigateCreateCharacter, setShouldNavigateCreateCharacter] = useState(false);
+  const [characters, setCharacters] = useState([]);
+  const [isCompact, setIsCompact] = useState(() => {
+    return localStorage.getItem("isCompact") === "true";
+  });
 
   useEffect(() => {
-    if (!user) {
-      setShouldNavigateLogin(true);
-      return;
-    }
+    const fetchCharacters = async () => {
+      try {
+        const res = await api.getCharacters();
+        console.log(res)
+        console.log(characters)
+        setCharacters(res || []);
+      } catch (error) {
+        console.error("Fetching characters failed:", error);
+        alert(error.message || "An error occurred while fetching characters");
+      }
+    };
+  
+    fetchCharacters();
+  }, []); 
+  
 
-    const storedCharacter = localStorage.getItem("character");
-    if (storedCharacter) {
-      setCharacter(JSON.parse(storedCharacter));
-    } else {
-      setShouldNavigateCreateCharacter(true);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (shouldNavigateLogin) {
-      navigate("/");
-      setShouldNavigateLogin(false);
-    }
-  }, [shouldNavigateLogin, navigate]);
-
-  useEffect(() => {
-    if (shouldNavigateCreateCharacter) {
-      navigate("/create-character");
-      setShouldNavigateCreateCharacter(false);
-    }
-  }, [shouldNavigateCreateCharacter, navigate]);
-
-  if (shouldNavigateLogin || shouldNavigateCreateCharacter) {
-    return null;
-  }
+  const toggleCompactView = () => {
+    const newCompactState = !isCompact;
+    setIsCompact(newCompactState);
+    localStorage.setItem("isCompact", newCompactState);
+  };
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-content">
         <h2>Dashboard</h2>
-        <p>Welcome, {user?.username}!</p>
 
-        {character ? (
-          <div className="character-box">
-            <h3>Your Character: {character.name}</h3>
-            <h4>Items:</h4>
-            <ul>
-              {character.items.length > 0 ? (
-                character.items.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))
-              ) : (
-                <p>No items yet.</p>
-              )}
-            </ul>
-            <button onClick={() => navigate("/create-item")}>
-              Create Item
-            </button>
-          </div>
-        ) : (
-          <p>Loading character...</p>
-        )}
+        <label className="compact-toggle">
+          <input type="checkbox" checked={isCompact} onChange={toggleCompactView} />
+          Compact View
+        </label>
+
+        <div className={`dashboard-content ${isCompact ? "compact-grid" : ""}`}>
+          {characters.length > 0 ? (
+            characters.map((character) => (
+              <CharacterCard 
+                key={character.id} 
+                character={character} 
+                isCompact={isCompact}
+              />
+            ))
+          ) : (
+            <p>No characters available</p>
+          )}
+        </div>
       </div>
     </div>
   );

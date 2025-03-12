@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import CharacterCreation from "./pages/CharacterCreation";
 import ItemCreation from "./pages/ItemCreation";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile"
 
 export default function App() {
   return (
@@ -15,7 +16,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-character" element={<CharacterCreation />} />
           <Route path="/create-item" element={<ItemCreation />} />
