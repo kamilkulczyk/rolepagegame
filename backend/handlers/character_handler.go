@@ -97,16 +97,11 @@ func GetCharacterByID(c *fiber.Ctx) error {
 
 	characterID := c.Params("id")
 
-	row, err := conn.Query(context.Background(), `
+	row := conn.QueryRow(context.Background(), `
 		SELECT c.id, c.name, c.description
 		FROM characters c
 		WHERE c.id = $1
 		`, characterID)
-	if err != nil {
-		fmt.Println("ERROR: Failed to fetch character:", err)
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch character"})
-	}
-
 
 	var character models.Character
 
