@@ -1,32 +1,36 @@
-import { Link } from "react-router-dom";
-import "../styles/CharacterCard.css";
+// import "../styles/CharacterCard.css";
 
 const defaultImage = "https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ="
 
-const CharacterCard = ({ 
+const CharacterView = ({ 
   character, 
   isCompact = false
-  
+
 }) => {
   return (
     <div className={`character-card ${isCompact ? "compact" : ""}`}>
         {isCompact ? (
-        <Link to={`/characters/${character.id}`}>
-            <img src={character.profilePicture || defaultImage} alt={character.name} />
-        </Link>
+            <div>
+                {character && (
+                    <img src={character.profilePicture || defaultImage} alt={character.name} />
+                )}
+            </div>
         ) : (
-        <img src={character.profilePicture || defaultImage} alt={character.name} />
+        <div>
+            {character && (
+                <img src={character.profilePicture || defaultImage} alt={character.name} />
+            )}
+        </div>
         )}
 
         {!isCompact && (
         <h3 className="character-name">
-            <Link to={`/characters/${character.id}`} className="character-link">
             {character.name}
-            </Link>
         </h3>
         )}
+        {character.description}
     </div>
   );
 };
 
-export default CharacterCard;
+export default CharacterView;

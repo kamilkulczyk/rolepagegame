@@ -1,74 +1,72 @@
 import { useContext, useEffect, useState } from "react";
+import { api } from "../api";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { ServerRouter, useNavigate } from "react-router-dom";
 import ItemCard from "../components/ItemCard";
 import "../styles/Dashboard.css";
+import CharacterView from "../components/CharacterView";
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
-  const [character, setCharacter] = useState(null);
+  const [characters, setCharacters] = useState([]);
   const navigate = useNavigate();
-  const [shouldNavigateLogin, setShouldNavigateLogin] = useState(false);
-  const [shouldNavigateCreateCharacter, setShouldNavigateCreateCharacter] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user) {
-      setShouldNavigateLogin(true);
-      return;
+    const fetchCharacter = async () => {
+      setLoading(true);
+      setError(null);
+
+      if (!user) {
+        navigate("/");
+        return;
+      }
+
+      try {
+        const fetchedCharacters = await api.getUserCharacters();
+        if (!fetchedCharacters) {
+          navigate("/create-character");
+        }
+        setCharacters(fetchedCharacters);
+        console.log("fetched: ",fetchedCharacters)
+      } catch (error) {
+        console.error("Error fetching character:", error);
+        setError(error.message || "Failed to fetch character.");
+
+        if (error.status === 404) {
+            navigate("/create-character");
+        }
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const storedCharacter = localStorage.getItem("character");
-    if (storedCharacter) {
-      setCharacter(JSON.parse(storedCharacter));
-    } else {
-      setShouldNavigateCreateCharacter(true);
-    }
-  }, [user]);
+    fetchCharacter();
+  }, [user, navigate])
 
-  useEffect(() => {
-    if (shouldNavigateLogin) {
-      navigate("/");
-      setShouldNavigateLogin(false);
-    }
-  }, [shouldNavigateLogin, navigate]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  useEffect(() => {
-    if (shouldNavigateCreateCharacter) {
-      navigate("/create-character");
-      setShouldNavigateCreateCharacter(false);
-    }
-  }, [shouldNavigateCreateCharacter, navigate]);
-
-  if (shouldNavigateLogin || shouldNavigateCreateCharacter) {
-    return null;
+  if (!user) {
+      return null;
   }
 
   return (
     <div className="dashboard-container">
+      <p>Welcome, {user?.username}!</p>
       <div className="dashboard-content">
-        <h2>Dashboard</h2>
-        <p>Welcome, {user?.username}!</p>
-
-        {character ? (
-          <div className="character-box">
-            <h3>Your Character: {character.name}</h3>
-            <h4>Items:</h4>
-            <ul>
-              {character.items.length > 0 ? (
-                character.items.map((item) => (
-                  <ItemCard key={item.id} item={item} />
-                ))
-              ) : (
-                <p>No items yet.</p>
-              )}
-            </ul>
-            <button onClick={() => navigate("/create-item")}>
-              Create Item
-            </button>
-          </div>
-        ) : (
-          <p>Loading character...</p>
-        )}
+        <div className={`characters-grid }`}>
+          {console.log(characters.length)}
+          {characters.length > 0 ? (
+            characters.map((character) => (
+              <CharacterView key={character.id} character={character} />
+            ))
+          ) : (
+            <p className="no-characters">No characters available</p>
+          )}
+        </div>
       </div>
     </div>
   );

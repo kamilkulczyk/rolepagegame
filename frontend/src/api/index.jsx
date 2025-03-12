@@ -10,15 +10,20 @@ const fakeApi = {
   register: async (username, email, password) => {
     return { token: "fake-jwt-token", user: { id: 1, username } };
   },
-  getCharacter: async (userId) => {
-    return { id: 1, name: "Hero", items: [] };
+  getUserCharacters: async () => {
+    return JSON.parse(localStorage.getItem("characters") || "[]");
+  },
+  getCharacterByID: async (id) => {
+    const characters = JSON.parse(localStorage.getItem("characters") || "");
+    const character = characters.find(char => char.id == id);
+    return character;
   },
   getCharacters: async () => {
     return JSON.parse(localStorage.getItem("characters") || "[]");
   },  
   createCharacter: async (formData) => {
     const existingCharacters = JSON.parse(localStorage.getItem("characters")) || [];
-    const newCharacter = {id: Date.now(), name: formData.name, description: formData.description,};
+    const newCharacter = {id: Date.now(), name: formData.name, description: formData.description, user_id: 1};
     const updatedCharacters = [...existingCharacters, newCharacter];
     localStorage.setItem("characters", JSON.stringify(updatedCharacters));
     return;
@@ -89,9 +94,49 @@ const realApi = {
       }
     }
   },
-  getCharacter: async (userId) => {
-    const res = await fetch(`${API_URL}/character/${userId}`);
-    return res.json();
+  getUserCharacters: async () => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const response = await axios.get(`${API_URL}/user-characters`, { headers });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        }
+      }
+    }
+  },
+  getCharacterByID: async (characterID) => {
+    try {
+      const response = await axios.get(`${API_URL}/characters/${characterID}`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        }
+      }
+    }
   },
   getCharacters: async () => {
     try {

@@ -7,6 +7,7 @@ import CharacterCreation from "./pages/CharacterCreation";
 import ItemCreation from "./pages/ItemCreation";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile"
+import Character from "./pages/Character";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-character" element={<CharacterCreation />} />
           <Route path="/create-item" element={<ItemCreation />} />
+          <Route path="/characters/:id" element={<Character />} />
         </Routes>
       </Router>
     </AuthProvider>

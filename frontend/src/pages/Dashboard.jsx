@@ -13,8 +13,6 @@ export default function Dashboard() {
     const fetchCharacters = async () => {
       try {
         const res = await api.getCharacters();
-        console.log(res)
-        console.log(characters)
         setCharacters(res || []);
       } catch (error) {
         console.error("Fetching characters failed:", error);
