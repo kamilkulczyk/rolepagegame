@@ -34,28 +34,23 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-content">
-        <h2>Dashboard</h2>
+    <h2>Dashboard</h2>
 
-        <label className="compact-toggle">
-          <input type="checkbox" checked={isCompact} onChange={toggleCompactView} />
-          Compact View
-        </label>
+    <label className="compact-toggle">
+      <input type="checkbox" checked={isCompact} onChange={toggleCompactView} />
+      Compact View
+    </label>
 
-        <div className={`dashboard-content ${isCompact ? "compact-grid" : ""}`}>
-          {characters.length > 0 ? (
-            characters.map((character) => (
-              <CharacterCard 
-                key={character.id} 
-                character={character} 
-                isCompact={isCompact}
-              />
-            ))
-          ) : (
-            <p>No characters available</p>
-          )}
-        </div>
-      </div>
+    <div className={`characters-grid ${isCompact ? "compact-grid" : ""}`}>
+      {characters.length > 0 ? (
+        characters.map((character) => (
+          <CharacterCard key={character.id} character={character} isCompact={isCompact} />
+        ))
+      ) : (
+        <p className="no-characters">No characters available</p>
+      )}
     </div>
+  </div>
+
   );
 }

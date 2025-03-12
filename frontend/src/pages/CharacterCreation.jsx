@@ -8,7 +8,7 @@ export default function CharacterCreation() {
   const [description, setDescription] = useState("");
   const navigate = useNavigate();
 
-  const handleCreateCharacter = async () => {
+  const handleCreateCharacter = async (e) => {
     e.preventDefault();
 
     const formData = {
