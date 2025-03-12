@@ -56,7 +56,6 @@ export default function Profile() {
   return (
     <div className="dashboard-container">
       <p>Welcome, {user?.username}!</p>
-      <div className="dashboard-content">
         <div className={`characters-grid }`}>
           {console.log(characters.length)}
           {characters.length > 0 ? (
@@ -67,7 +66,6 @@ export default function Profile() {
             <p className="no-characters">No characters available</p>
           )}
         </div>
-      </div>
     </div>
   );
 }

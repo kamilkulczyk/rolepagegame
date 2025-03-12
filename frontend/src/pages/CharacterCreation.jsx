@@ -7,13 +7,13 @@ export default function CharacterCreation() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const navigate = useNavigate();
-
+  
   const handleCreateCharacter = async (e) => {
     e.preventDefault();
 
     const formData = {
       name,
-      description,
+      description
     };
 
     try {
@@ -42,6 +42,7 @@ export default function CharacterCreation() {
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)} required />
+
           <button type="submit">Create Character</button>
         </form>
     </div>
