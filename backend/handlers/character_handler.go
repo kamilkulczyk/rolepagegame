@@ -97,7 +97,7 @@ func GetCharacterByID(c *fiber.Ctx) error {
 
 	characterID := c.Params("id")
 
-	rows, err := conn.QueryRow(context.Background(), `
+	row, err := conn.QueryRow(context.Background(), `
 		SELECT c.id, c.name, c.description
 		FROM characters c
 		WHERE c.id = $1
