@@ -11,6 +11,48 @@ import (
 	"github.com/kamilkulczyk/rolepagegame/models"
 )
 
+func InsertImage(tx pgx.Tx, imageURL string, objectType string, objectID int, purpose string) error {
+	if imageURL == "" {
+		return nil
+	}
+
+	var imageID int
+	err := tx.QueryRow(context.Background(), "SELECT id FROM images WHERE url = $1", imageURL).Scan(&imageID)
+	if err != nil { 
+		err = tx.QueryRow(context.Background(),
+			"INSERT INTO images (url) VALUES ($1) ON CONFLICT (url) DO NOTHING RETURNING id", imageURL,
+		).Scan(&imageID)
+		if err != nil {
+			fmt.Println("ERROR: Failed to insert image:", err)
+			return err
+		}
+	}
+
+	var objectTypeID int
+	err = tx.QueryRow(context.Background(), "SELECT id FROM object_types WHERE name = $1", objectType).Scan(&objectTypeID)
+	if err != nil {
+		fmt.Println("ERROR: Failed to get object_type_id:", err)
+		return err
+	}
+
+	var purposeID int
+	err = tx.QueryRow(context.Background(), "SELECT id FROM purposes WHERE name = $1", purpose).Scan(&purposeID)
+	if err != nil {
+		fmt.Println("ERROR: Failed to get purpose_id:", err)
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(),
+		"INSERT INTO image_assignments (image_id, object_type_id, object_id, purpose_id) VALUES ($1, $2, $3, $4)",
+		imageID, objectTypeID, objectID, purposeID)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to assign image:", err)
+		return err
+	}
+	return nil
+}
+
 func CreateCharacter(c *fiber.Ctx) error {
 	db := config.GetDB()
 	conn, err := db.Acquire(context.Background())
@@ -23,11 +65,10 @@ func CreateCharacter(c *fiber.Ctx) error {
 	userID, ok := c.Locals("user_id").(int)
 	if !ok {
 		fmt.Println("ERROR: Failed to get user ID from context")
-		return c.Status(401).JSON(fiber.Map{"error": "Unathorized"})
+		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
 	var character models.Character
-
 	if err := c.BodyParser(&character); err != nil {
 		fmt.Println("ERROR: Invalid request body:", err)
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
@@ -51,38 +92,10 @@ func CreateCharacter(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to insert character"})
 	}
 
-	insertImage := func(imageURL, purpose string) error {
-		if imageURL == "" {
-			return nil
-		}
-
-		var imageID int
-		err = tx.QueryRow(context.Background(), "SELECT id FROM images WHERE url = $1", imageURL).Scan(&imageID)
-		if err != nil { 
-			err = tx.QueryRow(context.Background(),
-				"INSERT INTO images (url) VALUES ($1) RETURNING id", imageURL,
-			).Scan(&imageID)
-			if err != nil {
-				fmt.Println("ERROR: Failed to insert image:", err)
-				return err
-			}
-		}
-
-		_, err = tx.Exec(context.Background(),
-			"INSERT INTO image_assignments (image_id, object_type, object_id, purpose) VALUES ($1, 'character', $2, $3)",
-			imageID, characterID, purpose)
-
-		if err != nil {
-			fmt.Println("ERROR: Failed to assign image:", err)
-			return err
-		}
-		return nil
-	}
-
-	if err := insertImage(character.ProfileImage, "profile"); err != nil {
+	if err := InsertImage(tx, character.ProfileImage, "Character", characterID, "Profile"); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign profile image"})
 	}
-	if err := insertImage(character.BackgroundImage, "background"); err != nil {
+	if err := InsertImage(tx, character.BackgroundImage, "Character", characterID, "Background"); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign background image"})
 	}
 
@@ -93,6 +106,7 @@ func CreateCharacter(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"message": "Character created successfully", "character_id": characterID})
 }
+
 
 func GetCharacters(c *fiber.Ctx) error {
 	db := config.GetDB()
