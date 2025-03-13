@@ -50,8 +50,8 @@ var (
 
 func CacheIDs(db *pgx.Conn) error {
 	once.Do(func() {
-		objectTypeIDs = make(map[string]int)
-		purposeIDs = make(map[string]int)
+		ObjectTypeIDs = make(map[string]int)
+		PurposeIDs = make(map[string]int)
 
 		rows, err := db.Query(context.Background(), `SELECT id, name FROM object_types`)
 		if err != nil {
@@ -64,7 +64,7 @@ func CacheIDs(db *pgx.Conn) error {
 			var id int
 			var name string
 			rows.Scan(&id, &name)
-			objectTypeIDs[name] = id
+			ObjectTypeIDs[name] = id
 		}
 
 		rows, err = db.Query(context.Background(), `SELECT id, name FROM purposes`)
@@ -78,7 +78,7 @@ func CacheIDs(db *pgx.Conn) error {
 			var id int
 			var name string
 			rows.Scan(&id, &name)
-			purposeIDs[name] = id
+			PurposeIDs[name] = id
 		}
 	})
 
