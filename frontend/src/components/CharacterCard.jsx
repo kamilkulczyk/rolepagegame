@@ -12,10 +12,10 @@ const CharacterCard = ({
     <div className={`character-card ${isCompact ? "compact" : ""}`}>
         {isCompact ? (
         <Link to={`/characters/${character.id}`}>
-            <img src={character.profilePicture || defaultImage} alt={character.name} />
+            <img src={character.profile_image || defaultImage} alt={character.name} />
         </Link>
         ) : (
-        <img src={character.profilePicture || defaultImage} alt={character.name} />
+        <img src={character.profile_image || defaultImage} alt={character.name} />
         )}
 
         {!isCompact && (

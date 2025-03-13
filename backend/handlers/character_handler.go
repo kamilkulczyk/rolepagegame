@@ -92,10 +92,10 @@ func CreateCharacter(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to insert character"})
 	}
 
-	if err := InsertImage(tx, character.ProfileImage, "character", characterID, "profile"); err != nil {
+	if err := InsertImage(tx, character.ProfileImage, "Character", characterID, "Profile"); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign profile image"})
 	}
-	if err := InsertImage(tx, character.BackgroundImage, "character", characterID, "background"); err != nil {
+	if err := InsertImage(tx, character.BackgroundImage, "Character", characterID, "Background"); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign background image"})
 	}
 
