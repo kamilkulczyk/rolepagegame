@@ -5,8 +5,10 @@ import (
     "fmt"
     "log"
     "os"
+    "sync"
 
     "github.com/jackc/pgx/v5/pgxpool"
+    "github.com/jackc/pgx/v5"
 )
 
 var dbpool *pgxpool.Pool
@@ -38,4 +40,47 @@ func CloseDB() {
     if dbpool != nil {
         dbpool.Close()
     }
+}
+
+var (
+	objectTypeIDs map[string]int
+	purposeIDs    map[string]int
+	once          sync.Once
+)
+
+func CacheIDs(db *pgx.Conn) error {
+	once.Do(func() {
+		objectTypeIDs = make(map[string]int)
+		purposeIDs = make(map[string]int)
+
+		rows, err := db.Query(context.Background(), `SELECT id, name FROM object_types`)
+		if err != nil {
+			fmt.Println("ERROR: Failed to fetch object types:", err)
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var id int
+			var name string
+			rows.Scan(&id, &name)
+			objectTypeIDs[name] = id
+		}
+
+		rows, err = db.Query(context.Background(), `SELECT id, name FROM purposes`)
+		if err != nil {
+			fmt.Println("ERROR: Failed to fetch purposes:", err)
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var id int
+			var name string
+			rows.Scan(&id, &name)
+			purposeIDs[name] = id
+		}
+	})
+
+	return nil
 }

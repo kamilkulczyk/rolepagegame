@@ -118,19 +118,17 @@ func GetCharacters(c *fiber.Ctx) error {
 	defer conn.Release()
 
 	rows, err := conn.Query(context.Background(), `
-		SELECT c.id, c.name, c.description,
-			COALESCE(pi.url, '') AS profile_image,
-			COALESCE(bi.url, '') AS background_image
+		SELECT 
+			c.id, c.name, c.description,
+			pi.url AS profile_image,
+			bi.url AS background_image
 		FROM characters c
-		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
-			AND ia_profile.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia_profile.purpose_id = (SELECT id FROM purposes WHERE name = 'Profile')
+		LEFT JOIN image_assignments ia_profile 
+			ON c.id = ia_profile.object_id 
+			AND ia_profile.object_type_id = $1
+			AND ia_profile.purpose_id = $2
 		LEFT JOIN images pi ON ia_profile.image_id = pi.id
-		LEFT JOIN image_assignments ia_bg ON c.id = ia_bg.object_id 
-			AND ia_bg.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia_bg.purpose_id = (SELECT id FROM purposes WHERE name = 'Background')
-		LEFT JOIN images bi ON ia_bg.image_id = bi.id
-	`)
+	`, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch characters:", err)
@@ -142,10 +140,15 @@ func GetCharacters(c *fiber.Ctx) error {
 
 	for rows.Next() {
 		var character models.Character
+		var profileImage *string
 
-		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage, &character.BackgroundImage); err != nil {
+		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &profileImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
+		}
+
+		if profileImage != nil {
+			character.ProfileImage = *profileImage
 		}
 
 		characters = append(characters, character)
@@ -158,6 +161,7 @@ func GetCharacters(c *fiber.Ctx) error {
 
 	return c.JSON(characters)
 }
+
 
 func GetCharacterByID(c *fiber.Ctx) error {
 	db := config.GetDB()
