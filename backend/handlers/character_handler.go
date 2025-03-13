@@ -118,20 +118,32 @@ func GetCharacters(c *fiber.Ctx) error {
 	defer conn.Release()
 
 	rows, err := conn.Query(context.Background(), `
-		SELECT c.id, c.name, c.description
+		SELECT c.id, c.name, c.description,
+			COALESCE(pi.url, '') AS profile_image,
+			COALESCE(bi.url, '') AS background_image
 		FROM characters c
-		`)
+		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
+			AND ia_profile.object_type_id = (SELECT id FROM object_types WHERE name = 'character')
+			AND ia_profile.purpose_id = (SELECT id FROM purposes WHERE name = 'profile')
+		LEFT JOIN images pi ON ia_profile.image_id = pi.id
+		LEFT JOIN image_assignments ia_bg ON c.id = ia_bg.object_id 
+			AND ia_bg.object_type_id = (SELECT id FROM object_types WHERE name = 'character')
+			AND ia_bg.purpose_id = (SELECT id FROM purposes WHERE name = 'background')
+		LEFT JOIN images bi ON ia_bg.image_id = bi.id
+	`)
+
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch characters:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch characters"})
 	}
 	defer rows.Close()
 
-	var characters []models.Character
+	characters := make(map[int]*models.Character)
+	
 	for rows.Next() {
 		var character models.Character
 
-		if err := rows.Scan(&character.ID, &character.Name, &character.Description); err != nil {
+		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage, &character.BackgroundImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
