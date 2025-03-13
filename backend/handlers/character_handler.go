@@ -11,7 +11,7 @@ import (
 	"github.com/kamilkulczyk/rolepagegame/models"
 )
 
-func InsertImage(tx pgx.Tx, imageURL string, objectType string, objectID int, purpose string) error {
+func InsertImage(tx pgxpool.Tx, imageURL string, objectType string, objectID int, purpose string) error {
 	if imageURL == "" {
 		return nil
 	}
@@ -20,7 +20,7 @@ func InsertImage(tx pgx.Tx, imageURL string, objectType string, objectID int, pu
 	err := tx.QueryRow(context.Background(), "SELECT id FROM images WHERE url = $1", imageURL).Scan(&imageID)
 	if err != nil { 
 		err = tx.QueryRow(context.Background(),
-			"INSERT INTO images (url) VALUES ($1) ON CONFLICT (url) DO NOTHING RETURNING id", imageURL,
+			"INSERT INTO images (url) VALUES ($1) RETURNING id", imageURL,
 		).Scan(&imageID)
 		if err != nil {
 			fmt.Println("ERROR: Failed to insert image:", err)
