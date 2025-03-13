@@ -43,8 +43,8 @@ func CloseDB() {
 }
 
 var (
-	objectTypeIDs map[string]int
-	purposeIDs    map[string]int
+	ObjectTypeIDs map[string]int
+	PurposeIDs    map[string]int
 	once          sync.Once
 )
 
