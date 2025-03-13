@@ -117,6 +117,10 @@ func GetCharacters(c *fiber.Ctx) error {
 	}
 	defer conn.Release()
 
+	if err := config.CacheIDs(conn.Conn()); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to cache object type IDs"})
+	}
+
 	rows, err := conn.Query(context.Background(), `
 		SELECT 
 			c.id, c.name, c.description,
