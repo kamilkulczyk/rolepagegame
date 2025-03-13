@@ -123,12 +123,12 @@ func GetCharacters(c *fiber.Ctx) error {
 			COALESCE(bi.url, '') AS background_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
-			AND ia_profile.object_type_id = (SELECT id FROM object_types WHERE name = 'character')
-			AND ia_profile.purpose_id = (SELECT id FROM purposes WHERE name = 'profile')
+			AND ia_profile.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
+			AND ia_profile.purpose_id = (SELECT id FROM purposes WHERE name = 'Profile')
 		LEFT JOIN images pi ON ia_profile.image_id = pi.id
 		LEFT JOIN image_assignments ia_bg ON c.id = ia_bg.object_id 
-			AND ia_bg.object_type_id = (SELECT id FROM object_types WHERE name = 'character')
-			AND ia_bg.purpose_id = (SELECT id FROM purposes WHERE name = 'background')
+			AND ia_bg.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
+			AND ia_bg.purpose_id = (SELECT id FROM purposes WHERE name = 'Background')
 		LEFT JOIN images bi ON ia_bg.image_id = bi.id
 	`)
 
@@ -148,12 +148,42 @@ func GetCharacters(c *fiber.Ctx) error {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
 
+		character.Images = []string{}
 		characters[character.ID] = &character
 	}
 
 	if err := rows.Err(); err != nil {
 		fmt.Println("ERROR: Rows iteration failed:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to process characters"})
+	}
+
+	imageRows, err := conn.Query(context.Background(), `
+		SELECT ia.object_id, i.url 
+		FROM image_assignments ia
+		JOIN images i ON ia.image_id = i.id
+		WHERE ia.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
+		AND ia.purpose_id NOT IN (
+			SELECT id FROM purposes WHERE name IN ('Profile', 'Background')
+		)
+	`)
+	if err != nil {
+		fmt.Println("ERROR: Failed to fetch additional images:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch images"})
+	}
+	defer imageRows.Close()
+
+	for imageRows.Next() {
+		var characterID int
+		var imageURL string
+
+		if err := imageRows.Scan(&characterID, &imageURL); err != nil {
+			fmt.Println("ERROR: Failed to scan image:", err)
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan images"})
+		}
+
+		if character, exists := characters[characterID]; exists {
+			character.Images = append(character.Images, imageURL)
+		}
 	}
 
 	var characterList []models.Character
@@ -163,6 +193,7 @@ func GetCharacters(c *fiber.Ctx) error {
 
 	return c.JSON(characterList)
 }
+
 
 func GetCharacterByID(c *fiber.Ctx) error {
 	db := config.GetDB()
