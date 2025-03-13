@@ -12,13 +12,13 @@ const CharacterView = ({
         {isCompact ? (
             <div>
                 {character && (
-                    <img src={character.profilePicture || defaultImage} alt={character.name} />
+                    <img src={character.profile_image || defaultImage} alt={character.name} />
                 )}
             </div>
         ) : (
         <div>
             {character && (
-                <img src={character.profilePicture || defaultImage} alt={character.name} />
+                <img src={character.profile_image || defaultImage} alt={character.name} />
             )}
         </div>
         )}

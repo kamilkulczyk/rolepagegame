@@ -23,7 +23,14 @@ const fakeApi = {
   },  
   createCharacter: async (formData) => {
     const existingCharacters = JSON.parse(localStorage.getItem("characters")) || [];
-    const newCharacter = {id: Date.now(), name: formData.name, description: formData.description, user_id: 1};
+    const newCharacter = {
+      id: Date.now(),
+      name: formData.name,
+      description: formData.description,
+      user_id: 1,
+      profile_picture: formData.profile_picture,
+      profile_picture: formData.background_picture,
+    };
     const updatedCharacters = [...existingCharacters, newCharacter];
     localStorage.setItem("characters", JSON.stringify(updatedCharacters));
     return;
