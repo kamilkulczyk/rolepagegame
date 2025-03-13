@@ -139,7 +139,7 @@ func GetCharacters(c *fiber.Ctx) error {
 	defer rows.Close()
 
 	characters := make(map[int]*models.Character)
-	
+
 	for rows.Next() {
 		var character models.Character
 
@@ -148,7 +148,7 @@ func GetCharacters(c *fiber.Ctx) error {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
 
-		characters = append(characters, character)
+		characters[character.ID] = &character
 	}
 
 	if err := rows.Err(); err != nil {
@@ -156,7 +156,12 @@ func GetCharacters(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to process characters"})
 	}
 
-	return c.JSON(characters)
+	var characterList []models.Character
+	for _, char := range characters {
+		characterList = append(characterList, *char)
+	}
+
+	return c.JSON(characterList)
 }
 
 func GetCharacterByID(c *fiber.Ctx) error {
