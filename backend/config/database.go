@@ -58,6 +58,9 @@ func CacheIDs(db *pgxpool.Pool) error {
     }
     defer conn.Release()
 
+    ObjectTypeIDs = make(map[string]int)
+    PurposeIDs = make(map[string]int)
+
     rows, err := conn.Query(context.Background(), "SELECT name, id FROM object_types")
     if err != nil {
         return fmt.Errorf("failed to cache object types: %w", err)
