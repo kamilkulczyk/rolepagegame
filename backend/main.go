@@ -11,7 +11,6 @@ import (
 
 func main() {
   config.ConnectDB()
-  
   if err := config.CacheIDs(conn.Conn()); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to cache object type IDs"})
 	}

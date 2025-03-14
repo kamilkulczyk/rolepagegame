@@ -30,6 +30,12 @@ func ConnectDB() {
     }
 
     log.Println("✅ Connected to database (Using Pool)")
+
+    if err := CacheIDs(dbpool); err != nil {
+        log.Fatalf("Failed to cache object type and purpose IDs: %v", err)
+    }
+
+    log.Println("✅ Cached object type and purpose IDs")
 }
 
 func GetDB() *pgxpool.Pool {
