@@ -4,7 +4,10 @@ import CharacterCard from "../components/CharacterCard";
 import "../styles/Dashboard.css";
 
 export default function Dashboard() {
-  const [characters, setCharacters] = useState([]);
+  const [characters, setCharacters] = useState(() => {
+    const cachedCharacters = localStorage.getItem("characters");
+    return cachedCharacters ? JSON.parse(cachedCharacters) : [];
+  });
   const [isCompact, setIsCompact] = useState(() => {
     return localStorage.getItem("isCompact") === "true";
   });
@@ -13,15 +16,19 @@ export default function Dashboard() {
     const fetchCharacters = async () => {
       try {
         const res = await api.getCharacters();
-        setCharacters(res || []);
+        if (res) {
+          setCharacters(res);
+        }
       } catch (error) {
         console.error("Fetching characters failed:", error);
         alert(error.message || "An error occurred while fetching characters");
       }
     };
   
-    fetchCharacters();
-  }, []); 
+    if (!localStorage.getItem("characters")) {
+      fetchCharacters();
+    }
+  }, []);
   
 
   const toggleCompactView = () => {

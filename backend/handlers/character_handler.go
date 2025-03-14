@@ -11,47 +11,38 @@ import (
 	"github.com/kamilkulczyk/rolepagegame/models"
 )
 
-func InsertImage(tx pgx.Tx, imageURL string, objectType string, objectID int, purpose string) error {
+func InsertImage(tx pgx.Tx, imageURL string, objectTypeID int, objectID int, purposeID int) error {
 	if imageURL == "" {
 		return nil
 	}
 
 	var imageID int
 	err := tx.QueryRow(context.Background(), "SELECT id FROM images WHERE url = $1", imageURL).Scan(&imageID)
-	if err != nil { 
+
+	if err != nil {
 		err = tx.QueryRow(context.Background(),
-			"INSERT INTO images (url) VALUES ($1) ON CONFLICT (url) DO NOTHING RETURNING id", imageURL,
+			"INSERT INTO images (url) VALUES ($1) ON CONFLICT (url) DO UPDATE SET url = EXCLUDED.url RETURNING id",
+			imageURL,
 		).Scan(&imageID)
+
 		if err != nil {
-			fmt.Println("ERROR: Failed to insert image:", err)
+			fmt.Println("ERROR: Failed to insert or retrieve image ID:", err)
 			return err
 		}
 	}
 
-	var objectTypeID int
-	err = tx.QueryRow(context.Background(), "SELECT id FROM object_types WHERE name = $1", objectType).Scan(&objectTypeID)
-	if err != nil {
-		fmt.Println("ERROR: Failed to get object_type_id:", err)
-		return err
-	}
-
-	var purposeID int
-	err = tx.QueryRow(context.Background(), "SELECT id FROM purposes WHERE name = $1", purpose).Scan(&purposeID)
-	if err != nil {
-		fmt.Println("ERROR: Failed to get purpose_id:", err)
-		return err
-	}
-
 	_, err = tx.Exec(context.Background(),
-		"INSERT INTO image_assignments (image_id, object_type_id, object_id, purpose_id) VALUES ($1, $2, $3, $4)",
+		"INSERT INTO image_assignments (image_id, object_type_id, object_id, purpose_id) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
 		imageID, objectTypeID, objectID, purposeID)
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to assign image:", err)
 		return err
 	}
+
 	return nil
 }
+
 
 func CreateCharacter(c *fiber.Ctx) error {
 	db := config.GetDB()
@@ -92,10 +83,10 @@ func CreateCharacter(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to insert character"})
 	}
 
-	if err := InsertImage(tx, character.ProfileImage, "Character", characterID, "Profile"); err != nil {
+	if err := InsertImage(tx, character.ProfileImage, config.ObjectTypeIDs["Character"], characterID, config.PurposeIDs["Profile"]); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign profile image"})
 	}
-	if err := InsertImage(tx, character.BackgroundImage, "Character", characterID, "Background"); err != nil {
+	if err := InsertImage(tx, character.BackgroundImage, config.ObjectTypeIDs["Character"], characterID, config.PurposeIDs["Background"]); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign background image"})
 	}
 
@@ -116,10 +107,6 @@ func GetCharacters(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
 	}
 	defer conn.Release()
-
-	if err := config.CacheIDs(conn.Conn()); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to cache object type IDs"})
-	}
 
 	rows, err := conn.Query(context.Background(), `
 		SELECT 
@@ -183,15 +170,15 @@ func GetCharacterByID(c *fiber.Ctx) error {
 			COALESCE(bi.url, '') AS background_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
-			AND ia_profile.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia_profile.purpose_id = (SELECT id FROM purposes WHERE name = 'Profile')
+			AND ia_profile.object_type_id = $2
+			AND ia_profile.purpose_id = $3
 		LEFT JOIN images pi ON ia_profile.image_id = pi.id
 		LEFT JOIN image_assignments ia_bg ON c.id = ia_bg.object_id 
-			AND ia_bg.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia_bg.purpose_id = (SELECT id FROM purposes WHERE name = 'Background')
+			AND ia_bg.object_type_id = $2
+			AND ia_bg.purpose_id = $4
 		LEFT JOIN images bi ON ia_bg.image_id = bi.id
 		WHERE c.id = $1
-	`, characterID)
+	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
 
 	var character models.Character
 
@@ -208,11 +195,10 @@ func GetCharacterByID(c *fiber.Ctx) error {
 		FROM image_assignments ia
 		JOIN images i ON ia.image_id = i.id
 		WHERE ia.object_id = $1
-			AND ia.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia.purpose_id NOT IN (
-				SELECT id FROM purposes WHERE name IN ('Profile', 'Background')
-			)
-	`, characterID)
+			AND ia.object_type_id = $2
+			AND ia.purpose_id NOT IN ($3, $4)
+	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch additional images:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch images"})
@@ -230,6 +216,7 @@ func GetCharacterByID(c *fiber.Ctx) error {
 
 	return c.JSON(character)
 }
+
 
 func GetCharactersByUserID(c *fiber.Ctx) error {
 	db := config.GetDB()
@@ -251,16 +238,19 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 			COALESCE(pi.url, '') AS profile_image,
 			COALESCE(bi.url, '') AS background_image
 		FROM characters c
-		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
-			AND ia_profile.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia_profile.purpose_id = (SELECT id FROM purposes WHERE name = 'Profile')
+		LEFT JOIN image_assignments ia_profile 
+			ON c.id = ia_profile.object_id 
+			AND ia_profile.object_type_id = $2
+			AND ia_profile.purpose_id = $3
 		LEFT JOIN images pi ON ia_profile.image_id = pi.id
-		LEFT JOIN image_assignments ia_bg ON c.id = ia_bg.object_id 
-			AND ia_bg.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia_bg.purpose_id = (SELECT id FROM purposes WHERE name = 'Background')
+		LEFT JOIN image_assignments ia_bg 
+			ON c.id = ia_bg.object_id 
+			AND ia_bg.object_type_id = $2
+			AND ia_bg.purpose_id = $4
 		LEFT JOIN images bi ON ia_bg.image_id = bi.id
 		WHERE c.user_id = $1
-	`, userID)
+	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch characters:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch characters"})
@@ -290,12 +280,11 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 		SELECT ia.object_id, i.url 
 		FROM image_assignments ia
 		JOIN images i ON ia.image_id = i.id
-		WHERE ia.object_id IN (SELECT id FROM characters WHERE user_id = $1)
-			AND ia.object_type_id = (SELECT id FROM object_types WHERE name = 'Character')
-			AND ia.purpose_id NOT IN (
-				SELECT id FROM purposes WHERE name IN ('Profile', 'Background')
-			)
-	`, userID)
+		WHERE ia.object_id = ANY(SELECT id FROM characters WHERE user_id = $1)
+			AND ia.object_type_id = $2
+			AND ia.purpose_id NOT IN ($3, $4)
+	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch additional images:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch images"})
@@ -323,3 +312,4 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 
 	return c.JSON(characterList)
 }
+
