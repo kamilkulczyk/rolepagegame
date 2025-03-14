@@ -5,10 +5,8 @@ import (
     "fmt"
     "log"
     "os"
-    "sync"
 
     "github.com/jackc/pgx/v5/pgxpool"
-    "github.com/jackc/pgx/v5"
 )
 
 var dbpool *pgxpool.Pool
