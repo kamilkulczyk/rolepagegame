@@ -51,42 +51,44 @@ func CloseDB() {
 var (
 	ObjectTypeIDs map[string]int
 	PurposeIDs    map[string]int
-	once          sync.Once
 )
 
-func CacheIDs(db *pgx.Conn) error {
-	once.Do(func() {
-		ObjectTypeIDs = make(map[string]int)
-		PurposeIDs = make(map[string]int)
+func CacheIDs(db *pgxpool.Pool) error {
+    conn, err := db.Acquire(context.Background())
+    if err != nil {
+        return fmt.Errorf("failed to acquire DB connection: %w", err)
+    }
+    defer conn.Release()
 
-		rows, err := db.Query(context.Background(), `SELECT id, name FROM object_types`)
-		if err != nil {
-			fmt.Println("ERROR: Failed to fetch object types:", err)
-			return
-		}
-		defer rows.Close()
+    rows, err := conn.Query(context.Background(), "SELECT name, id FROM object_types")
+    if err != nil {
+        return fmt.Errorf("failed to cache object types: %w", err)
+    }
+    defer rows.Close()
 
-		for rows.Next() {
-			var id int
-			var name string
-			rows.Scan(&id, &name)
-			ObjectTypeIDs[name] = id
-		}
+    for rows.Next() {
+        var name string
+        var id int
+        if err := rows.Scan(&name, &id); err != nil {
+            return fmt.Errorf("failed to scan object type: %w", err)
+        }
+        ObjectTypeIDs[name] = id
+    }
 
-		rows, err = db.Query(context.Background(), `SELECT id, name FROM purposes`)
-		if err != nil {
-			fmt.Println("ERROR: Failed to fetch purposes:", err)
-			return
-		}
-		defer rows.Close()
+    rows, err = conn.Query(context.Background(), "SELECT name, id FROM purposes")
+    if err != nil {
+        return fmt.Errorf("failed to cache purposes: %w", err)
+    }
+    defer rows.Close()
 
-		for rows.Next() {
-			var id int
-			var name string
-			rows.Scan(&id, &name)
-			PurposeIDs[name] = id
-		}
-	})
+    for rows.Next() {
+        var name string
+        var id int
+        if err := rows.Scan(&name, &id); err != nil {
+            return fmt.Errorf("failed to scan purpose: %w", err)
+        }
+        PurposeIDs[name] = id
+    }
 
-	return nil
+    return nil
 }
