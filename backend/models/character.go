@@ -12,6 +12,6 @@ type RpgData struct {
 	CharacterID int                    `json:"character_id"`
 	Class       string                 `json:"class"`
 	Race        string                 `json:"race"`
-  Lore        string                 `json:"lore"`
+  	Lore        string                 `json:"lore"`
 	Stats       map[string]interface{} `json:"stats"`
 }

@@ -26,7 +26,7 @@ export default function RPGDataForm({ onDetailsChange }) {
       race,
       characterClass,
       lore,
-      stats: JSON.stringify(stats),
+      stats,
     });
   };
 
