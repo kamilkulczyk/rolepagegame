@@ -1,10 +1,9 @@
 import { useState } from "react";
-import "../styles/RPGDataForm.css";
+import "../styles/RpgDataForm.css";
 
 export default function RPGDataForm({ onDetailsChange }) {
   const [race, setRace] = useState("");
   const [characterClass, setCharacterClass] = useState("");
-  const [description, setDescription] = useState("");
   const [lore, setLore] = useState("");
   const [stats, setStats] = useState([]); // Array of { name, value }
 
@@ -34,7 +33,6 @@ export default function RPGDataForm({ onDetailsChange }) {
 
   return (
     <div className="rpg-data-form">
-      {/* Left Side: Race, Class, Description, Lore */}
       <div className="rpg-data-left">
         <h3>Character RPG Details</h3>
         <input

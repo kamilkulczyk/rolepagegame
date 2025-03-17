@@ -21,20 +21,24 @@ const fakeApi = {
   getCharacters: async () => {
     return JSON.parse(localStorage.getItem("characters") || "[]");
   },  
-  createCharacter: async (formData) => {
+  createCharacter: async (characterDetails, rpgData) => {
     const existingCharacters = JSON.parse(localStorage.getItem("characters")) || [];
+
     const newCharacter = {
       id: Date.now(),
-      name: formData.name,
-      description: formData.description,
+      name: characterDetails.name,
+      description: characterDetails.description,
       user_id: 1,
-      profile_picture: formData.profile_picture,
-      profile_picture: formData.background_picture,
+      profile_picture: characterDetails.profile_picture,
+      rpg_data: rpgData,
     };
+
     const updatedCharacters = [...existingCharacters, newCharacter];
     localStorage.setItem("characters", JSON.stringify(updatedCharacters));
-    return;
+
+    return newCharacter;
   },
+
   createItem: async (characterId, itemName) => {
     const newItem = { id: Math.random(), name: itemName };
     let character = JSON.parse(localStorage.getItem("character"));
