@@ -236,7 +236,7 @@ func GetRpgDataByCharacterID(c *fiber.Ctx) error {
 
 	var rpgData models.RpgData
 
-	if err := row.Scan(&rpgData.ID, &rpgData.CharacterID, &rpgData.Class, &rpgData.Race, &rpgData.Lore, &rpgData.Stats); err != nil {
+	if err := row.Scan(&rpgData.ID, &rpgData.CharacterID, &rpgData.CharacterClass, &rpgData.Race, &rpgData.Lore, &rpgData.Stats); err != nil {
 		if err == pgx.ErrNoRows {
 			return c.Status(404).JSON(fiber.Map{"error": "RPG data not found"})
 		}
