@@ -1,0 +1,25 @@
+.character-view {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  @media (min-width: 768px) {
+    .character-view {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+  
+    .character-card {
+      flex: 1;
+      max-width: 50%;
+    }
+  
+    .rpg-data {
+      flex: 1;
+      max-width: 50%;
+    }
+  }
+  
