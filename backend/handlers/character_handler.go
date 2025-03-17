@@ -118,7 +118,7 @@ func CreateRpgData(c *fiber.Ctx) error {
 
 	_, err = conn.Exec(context.Background(),
 		"INSERT INTO rpg_data (character_id, race, class, lore, stats) VALUES ($1, $2, $3, $4, $5)",
-		characterID, rpgData.Race, rpgData.Class, rpgData.Lore, rpgData.Stats)
+		characterID, rpgData.Race, rpgData.CharacterClass, rpgData.Lore, rpgData.Stats)
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to insert RPG data:", err)

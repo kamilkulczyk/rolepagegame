@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/RpgDataForm.css";
 
 export default function RPGDataForm({ onDetailsChange }) {
@@ -6,6 +6,22 @@ export default function RPGDataForm({ onDetailsChange }) {
   const [characterClass, setCharacterClass] = useState("");
   const [lore, setLore] = useState("");
   const [stats, setStats] = useState([]); // Array of { name, value }
+
+  useEffect(() => {
+    const statsObject = stats.reduce((acc, stat) => {
+      if (stat.name.trim()) {
+        acc[stat.name] = stat.value;
+      }
+      return acc;
+    }, {});
+
+    onDetailsChange({
+      race,
+      characterClass,
+      lore,
+      stats: statsObject,
+    });
+  }, [race, characterClass, lore, stats]);
 
   const handleAddStat = () => {
     setStats([...stats, { name: "", value: "" }]);
@@ -21,24 +37,6 @@ export default function RPGDataForm({ onDetailsChange }) {
     setStats(newStats);
   };
 
-  const handleChange = () => {
-    // Convert stats array into an object
-    const statsObject = stats.reduce((acc, stat) => {
-      if (stat.name.trim()) {
-        acc[stat.name] = stat.value;
-      }
-      return acc;
-    }, {});
-  
-    onDetailsChange({
-      race,
-      characterClass,
-      lore,
-      stats: statsObject,
-    });
-  };
-  
-
   return (
     <div className="rpg-data-form">
       <div className="rpg-data-left">
@@ -47,10 +45,7 @@ export default function RPGDataForm({ onDetailsChange }) {
           type="text"
           placeholder="Race"
           value={race}
-          onChange={(e) => {
-            setRace(e.target.value);
-            handleChange();
-          }}
+          onChange={(e) => setRace(e.target.value)}
           required
         />
 
@@ -58,20 +53,14 @@ export default function RPGDataForm({ onDetailsChange }) {
           type="text"
           placeholder="Class"
           value={characterClass}
-          onChange={(e) => {
-            setCharacterClass(e.target.value);
-            handleChange();
-          }}
+          onChange={(e) => setCharacterClass(e.target.value)}
           required
         />
 
         <textarea
           placeholder="Character Lore"
           value={lore}
-          onChange={(e) => {
-            setLore(e.target.value);
-            handleChange();
-          }}
+          onChange={(e) => setLore(e.target.value)}
         />
       </div>
 

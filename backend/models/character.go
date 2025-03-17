@@ -10,10 +10,10 @@ type CharacterDetails struct {
 }
 
 type RpgData struct {
-	ID          int                    `json:"id"`
-	CharacterID int                    `json:"character_id"`
-	Class       string                 `json:"class"`
-	Race        string                 `json:"race"`
-	Lore        string                 `json:"lore"`
-	Stats       json.RawMessage 		`json:"stats"`
+	ID          	int                 `json:"id"`
+	CharacterID 	int                 `json:"character_id"`
+	CharacterClass  string              `json:"character_class"`
+	Race        	string              `json:"race"`
+	Lore        	string              `json:"lore"`
+	Stats       	json.RawMessage		`json:"stats"`
 }
