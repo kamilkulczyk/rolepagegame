@@ -22,13 +22,22 @@ export default function RPGDataForm({ onDetailsChange }) {
   };
 
   const handleChange = () => {
+    // Convert stats array into an object
+    const statsObject = stats.reduce((acc, stat) => {
+      if (stat.name.trim()) {
+        acc[stat.name] = stat.value;
+      }
+      return acc;
+    }, {});
+  
     onDetailsChange({
       race,
       characterClass,
       lore,
-      stats,
+      stats: statsObject,
     });
   };
+  
 
   return (
     <div className="rpg-data-form">
