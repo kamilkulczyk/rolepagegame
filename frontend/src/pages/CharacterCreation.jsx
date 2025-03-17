@@ -11,12 +11,13 @@ export default function CharacterCreation() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const updateCharacterDetails = (field, value) => {
-    setCharacterDetails((prev) => ({ ...prev, [field]: value }));
+  // Generic update function that works dynamically
+  const updateCharacterDetails = (updatedDetails) => {
+    setCharacterDetails((prev) => ({ ...prev, ...updatedDetails }));
   };
 
-  const updateRpgData = (field, value) => {
-    setRpgData((prev) => ({ ...prev, [field]: value }));
+  const updateRpgData = (updatedData) => {
+    setRpgData((prev) => ({ ...prev, ...updatedData }));
   };
 
   const handleSubmit = async (e) => {
@@ -42,15 +43,15 @@ export default function CharacterCreation() {
         <div className="character-forms">
           <div className="character-form-section">
             <CharacterDetailsForm 
-              character={characterDetails} 
-              updateCharacter={updateCharacterDetails} 
+              characterDetails={characterDetails} 
+              onDetailsChange={updateCharacterDetails} 
             />
           </div>
           
           <div className="character-form-section">
             <RpgDataForm 
-              character={rpgData} 
-              updateCharacter={updateRpgData} 
+              rpgData={rpgData} 
+              onDetailsChange={updateRpgData} 
             />
           </div>
         </div>
