@@ -18,6 +18,10 @@ const fakeApi = {
     const character = characters.find(char => char.id == id);
     return character;
   },
+  getRpgDataByCharacterID: async (id) => {
+    const rpgData = JSON.parse(localStorage.getItem("rpgData") || "[]");
+    return rpgData.find(data => data.character_id == id) || null;
+  },  
   getCharacters: async () => {
     return JSON.parse(localStorage.getItem("characters") || "[]");
   },  
@@ -149,6 +153,27 @@ const realApi = {
       }
     }
   },
+  getRpgDataByCharacterID: async (characterID) => {
+    try {
+      const response = await axios.get(`${API_URL}/characters/${characterID}/rpg-data`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        };
+      }
+    }
+  },  
   getCharacters: async () => {
     try {
       const response = await axios.get(`${API_URL}/characters`);

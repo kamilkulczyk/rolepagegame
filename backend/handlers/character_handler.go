@@ -217,6 +217,35 @@ func GetCharacterByID(c *fiber.Ctx) error {
 	return c.JSON(character)
 }
 
+func GetRpgDataByCharacterID(c *fiber.Ctx) error {
+	db := config.GetDB()
+	conn, err := db.Acquire(context.Background())
+	if err != nil {
+		fmt.Println("Failed to acquire DB connection:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
+	}
+	defer conn.Release()
+
+	characterID := c.Params("id")
+
+	row := conn.QueryRow(context.Background(), `
+		SELECT id, character_id, class, race, lore, stats
+		FROM rpg_data
+		WHERE character_id = $1
+	`, characterID)
+
+	var rpgData models.RpgData
+
+	if err := row.Scan(&rpgData.ID, &rpgData.CharacterID, &rpgData.Class, &rpgData.Race, &rpgData.Lore, &rpgData.Stats); err != nil {
+		if err == pgx.ErrNoRows {
+			return c.Status(404).JSON(fiber.Map{"error": "RPG data not found"})
+		}
+		fmt.Println("ERROR: Failed to scan RPG data:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to scan RPG data"})
+	}
+
+	return c.JSON(rpgData)
+}
 
 func GetCharactersByUserID(c *fiber.Ctx) error {
 	db := config.GetDB()

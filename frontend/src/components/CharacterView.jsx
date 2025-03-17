@@ -1,36 +1,11 @@
-// import "../styles/CharacterCard.css";
+import CharacterDetails from "./CharacterDetails";
+import RpgData from "./RpgData";
 
-const defaultImage = "https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ="
-
-const CharacterView = ({ 
-  character, 
-  isCompact = false
-
-}) => {
+export default function CharacterView({ character, rpgData }) {
   return (
-    <div className={`character-card ${isCompact ? "compact" : ""}`}>
-        {isCompact ? (
-            <div>
-                {character && (
-                    <img src={character.profile_image || defaultImage} alt={character.name} />
-                )}
-            </div>
-        ) : (
-        <div>
-            {character && (
-                <img src={character.profile_image || defaultImage} alt={character.name} />
-            )}
-        </div>
-        )}
-
-        {!isCompact && (
-        <h3 className="character-name">
-            {character.name}
-        </h3>
-        )}
-        {character.description}
+    <div className="character-view">
+      <CharacterDetails character={character} />
+      <RpgData rpgData={rpgData} />
     </div>
   );
-};
-
-export default CharacterView;
+}

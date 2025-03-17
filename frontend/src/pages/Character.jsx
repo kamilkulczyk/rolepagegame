@@ -1,49 +1,62 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CharacterView from "../components/CharacterView";
 import { api } from "../api";
 
 const Character = () => {
-    const { id } = useParams();
-    const [character, setCharacter] = useState(null)
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const { id } = useParams();
+  const location = useLocation();
+  const passedCharacter = location.state?.character || null; // Get passed data
 
-    useEffect(() => {
-        const fetchCharacter = async () => {
-          setLoading(true);
-          setError(null);
+  const [character, setCharacter] = useState(passedCharacter);
+  const [rpgData, setRpgData] = useState(null);
+  const [loading, setLoading] = useState(!passedCharacter); // Load only if no data was passed
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
     
-          try {
-            const fetchedCharacter = await api.getCharacterByID(id);
-            setCharacter(fetchedCharacter || []);
-          } catch (error) {
-            console.error("Error fetching character:", error);
-            setError(error.message || "Failed to fetch character.");
-    
-          } finally {
-            setLoading(false);
-          }
+    const fetchCharacterData = async () => {
+      if (character) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [fetchedCharacter, fetchedRpgData] = await Promise.all([
+          api.getCharacterByID(id),
+          api.getRpgDataByCharacterID(id),
+        ]);
+
+        if (isMounted) {
+          setCharacter(fetchedCharacter || {});
+          setRpgData(fetchedRpgData || {});
         }
-    
-        fetchCharacter();
-      }, [id])
+      } catch (error) {
+        console.error("Error fetching character data:", error);
+        if (isMounted) setError(error.message || "Failed to fetch data.");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
 
-      if (loading) return <p>Loading character...</p>;
-      if (!character) return <p>Character not found</p>;
+    fetchCharacterData();
 
-      return (
-        <div className="dashboard-container">
-        <div className="dashboard-content">
+    return () => {
+      isMounted = false;
+    };
+  }, [id, character]);
 
-            {character ? (
-                <CharacterView character = { character }/>
-            ) : (
-                <p>Loading character...</p>
-            )}
-        </div>
-        </div>
-      )
-}
+  if (loading) return <p>Loading character...</p>;
+  if (!character) return <p>Character not found</p>;
+
+  return (
+    <div className="dashboard-container">
+      <div className="dashboard-content">
+        <CharacterView character={character} rpgData={rpgData} />
+      </div>
+    </div>
+  );
+};
 
 export default Character;
