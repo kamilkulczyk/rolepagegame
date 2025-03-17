@@ -195,7 +195,7 @@ func GetCharacterByID(c *fiber.Ctx) error {
 
 	row := conn.QueryRow(context.Background(), `
 		SELECT c.id, c.name, c.description,
-			COALESCE(pi.url, '') AS profile_image,
+			COALESCE(pi.url, '') AS profile_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
 			AND ia_profile.object_type_id = $2
