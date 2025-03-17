@@ -14,12 +14,12 @@
   
     .character-card {
       flex: 1;
-      max-width: 50%;
+      max-width: 100%;
     }
   
     .rpg-data {
       flex: 1;
-      max-width: 50%;
+      max-width: 100%;
     }
   }
   
