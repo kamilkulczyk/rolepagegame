@@ -10,7 +10,7 @@ import (
 func CharacterRoutes(app *fiber.App) {
   app.Post("/characters", middlewares.JWTMiddleware(), handlers.CreateCharacter)
   app.Post("/characters/:id/rpg-data", middlewares.JWTMiddleware(), handlers.CreateRpgData)
-  app.Get("/rpg-data/:id", GetRpgDataByCharacterID)
+  app.Get("/rpg-data/:id", handlers.GetRpgDataByCharacterID)
   app.Get("/characters", handlers.GetCharacters)
   app.Get("/characters/:id", handlers.GetCharacterByID)
   app.Get("/user-characters", middlewares.JWTMiddleware(), handlers.GetCharactersByUserID)
