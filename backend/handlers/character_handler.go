@@ -206,7 +206,7 @@ func GetCharacterByID(c *fiber.Ctx) error {
 
 	var character models.CharacterDetails
 
-	if err := row.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage, &character.BackgroundImage); err != nil {
+	if err := row.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage); err != nil {
 		if err == pgx.ErrNoRows {
 			return c.Status(404).JSON(fiber.Map{"error": "Character not found"})
 		}
@@ -261,7 +261,6 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
 
-		character.Images = []string{}
 		characters[character.ID] = &character
 	}
 
