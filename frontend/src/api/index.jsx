@@ -174,29 +174,28 @@ const realApi = {
     });
     return res.json();
   },
-  createCharacter: async (formData) => {
+  createCharacter: async (details, rpgData) => {
     const token = localStorage.getItem("token");
     const headers = { Authorization: `Bearer ${token}` };
+
     try {
-      const response = await axios.post(`${API_URL}/create-character`, formData, { headers });
-      return response.data;
+        const charResponse = await axios.post(`${API_URL}/characters`, details, { headers });
+        const characterID = charResponse.data.character_id;
+
+        await axios.post(`${API_URL}/characters/${characterID}/rpg-data`, rpgData, { headers });
+
+        return { message: "Character created successfully!" };
     } catch (error) {
-      if (error.response) {
-        throw {
-          status: error.response.status,
-          data: error.response.data,
-        };
-      } else if (error.request) {
-        throw {
-          message: "No response from server.",
-        };
-      } else {
-        throw {
-          message: error.message,
+        if (error.response) {
+            throw { status: error.response.status, data: error.response.data };
+        } else if (error.request) {
+            throw { message: "No response from server." };
+        } else {
+            throw { message: error.message };
         }
-      }
     }
-  },
+},
+
 };
 
 // Use fake API in development, real API in production

@@ -1,10 +1,16 @@
 package models
 
-type Character struct {
+type CharacterDetails struct {
   ID      		      int    	 `json:"id"`
   Name	   		      string   `json:"name"`
   Description       string   `json:"description"`
   ProfileImage      string   `json:"profile_image"`
-  BackgroundImage   string   `json:"background_image"`
-  Images           []string  `json:"additional_images"`
+}
+
+type RpgData struct {
+	ID          int                    `json:"id"`
+	CharacterID int                    `json:"character_id"`
+	Class       string                 `json:"class"`
+	Level       int                    `json:"level"`
+	Stats       map[string]interface{} `json:"stats"`
 }

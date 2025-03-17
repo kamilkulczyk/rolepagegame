@@ -59,7 +59,7 @@ func CreateCharacter(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	var character models.Character
+	var character models.CharacterDetails
 	if err := c.BodyParser(&character); err != nil {
 		fmt.Println("ERROR: Invalid request body:", err)
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
@@ -86,9 +86,6 @@ func CreateCharacter(c *fiber.Ctx) error {
 	if err := InsertImage(tx, character.ProfileImage, config.ObjectTypeIDs["Character"], characterID, config.PurposeIDs["Profile"]); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign profile image"})
 	}
-	if err := InsertImage(tx, character.BackgroundImage, config.ObjectTypeIDs["Character"], characterID, config.PurposeIDs["Background"]); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign background image"})
-	}
 
 	if err := tx.Commit(context.Background()); err != nil {
 		fmt.Println("ERROR: Failed to commit transaction:", err)
@@ -98,6 +95,38 @@ func CreateCharacter(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Character created successfully", "character_id": characterID})
 }
 
+func CreateRpgData(c *fiber.Ctx) error {
+	db := config.GetDB()
+	conn, err := db.Acquire(context.Background())
+	if err != nil {
+		fmt.Println("Failed to acquire DB connection:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
+	}
+	defer conn.Release()
+
+	characterID, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		fmt.Println("ERROR: Invalid character ID:", err)
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid character ID"})
+	}
+
+	var rpgData models.RpgData
+	if err := c.BodyParser(&rpgData); err != nil {
+		fmt.Println("ERROR: Invalid RPG data:", err)
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid RPG data"})
+	}
+
+	_, err = conn.Exec(context.Background(),
+		"INSERT INTO rpg_data (character_id, race, class, lore, stats) VALUES ($1, $2, $3, $4, $5)",
+		characterID, rpgData.Race, rpgData.Class, rpgData.Lore, rpgData.Stats)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to insert RPG data:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to insert RPG data"})
+	}
+
+	return c.JSON(fiber.Map{"message": "RPG Data stored successfully"})
+}
 
 func GetCharacters(c *fiber.Ctx) error {
 	db := config.GetDB()
@@ -126,10 +155,10 @@ func GetCharacters(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	var characters []models.Character
+	var characters []models.CharacterDetails
 
 	for rows.Next() {
-		var character models.Character
+		var character models.CharacterDetails
 		var profileImage *string
 
 		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &profileImage); err != nil {
@@ -167,20 +196,15 @@ func GetCharacterByID(c *fiber.Ctx) error {
 	row := conn.QueryRow(context.Background(), `
 		SELECT c.id, c.name, c.description,
 			COALESCE(pi.url, '') AS profile_image,
-			COALESCE(bi.url, '') AS background_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
 			AND ia_profile.object_type_id = $2
 			AND ia_profile.purpose_id = $3
 		LEFT JOIN images pi ON ia_profile.image_id = pi.id
-		LEFT JOIN image_assignments ia_bg ON c.id = ia_bg.object_id 
-			AND ia_bg.object_type_id = $2
-			AND ia_bg.purpose_id = $4
-		LEFT JOIN images bi ON ia_bg.image_id = bi.id
 		WHERE c.id = $1
-	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
 
-	var character models.Character
+	var character models.CharacterDetails
 
 	if err := row.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage, &character.BackgroundImage); err != nil {
 		if err == pgx.ErrNoRows {
@@ -196,8 +220,8 @@ func GetCharacterByID(c *fiber.Ctx) error {
 		JOIN images i ON ia.image_id = i.id
 		WHERE ia.object_id = $1
 			AND ia.object_type_id = $2
-			AND ia.purpose_id NOT IN ($3, $4)
-	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+			AND ia.purpose_id NOT IN ($3)
+	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch additional images:", err)
@@ -236,20 +260,14 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	rows, err := conn.Query(context.Background(), `
 		SELECT c.id, c.name, c.description,
 			COALESCE(pi.url, '') AS profile_image,
-			COALESCE(bi.url, '') AS background_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile 
 			ON c.id = ia_profile.object_id 
 			AND ia_profile.object_type_id = $2
 			AND ia_profile.purpose_id = $3
 		LEFT JOIN images pi ON ia_profile.image_id = pi.id
-		LEFT JOIN image_assignments ia_bg 
-			ON c.id = ia_bg.object_id 
-			AND ia_bg.object_type_id = $2
-			AND ia_bg.purpose_id = $4
-		LEFT JOIN images bi ON ia_bg.image_id = bi.id
 		WHERE c.user_id = $1
-	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch characters:", err)
@@ -257,10 +275,10 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	characters := make(map[int]*models.Character)
+	characters := make(map[int]*models.CharacterDetails)
 
 	for rows.Next() {
-		var character models.Character
+		var character models.CharacterDetails
 
 		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage, &character.BackgroundImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
@@ -282,8 +300,8 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 		JOIN images i ON ia.image_id = i.id
 		WHERE ia.object_id = ANY(SELECT id FROM characters WHERE user_id = $1)
 			AND ia.object_type_id = $2
-			AND ia.purpose_id NOT IN ($3, $4)
-	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"], config.PurposeIDs["Background"])
+			AND ia.purpose_id NOT IN ($3)
+	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch additional images:", err)
@@ -305,7 +323,7 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 		}
 	}
 
-	var characterList []models.Character
+	var characterList []models.CharacterDetails
 	for _, char := range characters {
 		characterList = append(characterList, *char)
 	}

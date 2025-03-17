@@ -102,7 +102,7 @@ func Login(c *fiber.Ctx) error {
     var storedPassword string
 
     if err := conn.QueryRow(context.Background(),
-        "SELECT id, username, email, password, is_admin FROM users WHERE email = $1", req.Email).
+        "SELECT id, username, email, password, is_admin FROM users WHERE email ILIKE $1", req.Email).
         Scan(&user.ID, &user.Username, &user.Email, &storedPassword, &user.IsAdmin); err != nil {
           return c.Status(401).JSON(fiber.Map{
             "error":          "Invalid credentials",

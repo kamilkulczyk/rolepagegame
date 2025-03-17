@@ -1,0 +1,96 @@
+.rpg-data-form {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+  max-width: 800px;
+  margin: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.rpg-data-left {
+  flex: 1;
+  min-width: 300px;
+}
+
+.rpg-data-right {
+  flex: 1;
+  min-width: 300px;
+}
+
+.rpg-data-form input,
+.rpg-data-form textarea {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #555;
+  background: #2c2c2c;
+  color: white;
+}
+
+.rpg-data-form textarea {
+  height: 150px;
+  resize: none;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table th {
+  background: #333;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #555;
+}
+
+.stats-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #444;
+}
+
+.stats-table td:first-child {
+  width: 65%;
+}
+
+.stats-table td:nth-child(2) {
+  width: 25%;
+}
+
+.stats-table input {
+  width: 100%;
+  padding: 5px;
+  background: #333;
+  border: 1px solid #555;
+  color: white;
+}
+
+.stats-table button {
+  padding: 6px 10px;
+  background: red;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.add-stat-btn {
+  padding: 8px 12px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .rpg-data-form {
+    flex-direction: column;
+  }
+}
