@@ -17,7 +17,7 @@ export default function RPGDataForm({ onDetailsChange }) {
 
     onDetailsChange({
       race,
-      characterClass,
+      character_class: characterClass,
       lore,
       stats: statsObject,
     });
