@@ -104,7 +104,7 @@ func CreateRpgData(c *fiber.Ctx) error {
 	}
 	defer conn.Release()
 
-	characterID, err := strconv.Atoi(c.Params("id"))
+	characterID := c.Params("id")
 	if err != nil {
 		fmt.Println("ERROR: Invalid character ID:", err)
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid character ID"})
@@ -214,30 +214,6 @@ func GetCharacterByID(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 	}
 
-	imageRows, err := conn.Query(context.Background(), `
-		SELECT i.url 
-		FROM image_assignments ia
-		JOIN images i ON ia.image_id = i.id
-		WHERE ia.object_id = $1
-			AND ia.object_type_id = $2
-			AND ia.purpose_id NOT IN ($3)
-	`, characterID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
-
-	if err != nil {
-		fmt.Println("ERROR: Failed to fetch additional images:", err)
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch images"})
-	}
-	defer imageRows.Close()
-
-	for imageRows.Next() {
-		var imageURL string
-		if err := imageRows.Scan(&imageURL); err != nil {
-			fmt.Println("ERROR: Failed to scan image:", err)
-			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan images"})
-		}
-		character.Images = append(character.Images, imageURL)
-	}
-
 	return c.JSON(character)
 }
 
@@ -280,7 +256,7 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	for rows.Next() {
 		var character models.CharacterDetails
 
-		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage, &character.BackgroundImage); err != nil {
+		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
@@ -292,35 +268,6 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	if err := rows.Err(); err != nil {
 		fmt.Println("ERROR: Rows iteration failed:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to process characters"})
-	}
-
-	imageRows, err := conn.Query(context.Background(), `
-		SELECT ia.object_id, i.url 
-		FROM image_assignments ia
-		JOIN images i ON ia.image_id = i.id
-		WHERE ia.object_id = ANY(SELECT id FROM characters WHERE user_id = $1)
-			AND ia.object_type_id = $2
-			AND ia.purpose_id NOT IN ($3)
-	`, userID, config.ObjectTypeIDs["Character"], config.PurposeIDs["Profile"])
-
-	if err != nil {
-		fmt.Println("ERROR: Failed to fetch additional images:", err)
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch images"})
-	}
-	defer imageRows.Close()
-
-	for imageRows.Next() {
-		var characterID int
-		var imageURL string
-
-		if err := imageRows.Scan(&characterID, &imageURL); err != nil {
-			fmt.Println("ERROR: Failed to scan image:", err)
-			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan images"})
-		}
-
-		if character, exists := characters[characterID]; exists {
-			character.Images = append(character.Images, imageURL)
-		}
 	}
 
 	var characterList []models.CharacterDetails
