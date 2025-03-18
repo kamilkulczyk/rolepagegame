@@ -110,10 +110,14 @@ func UpdateCharacter(c *fiber.Ctx) error {
 		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 	}
 
-	characterID := c.Params("id")
-	if characterID == "" {
+	characterIDStr := c.Params("id") // This is a string
+	if characterIDStr == "" {
 		fmt.Println("ERROR: Character ID not provided")
 		return c.Status(400).JSON(fiber.Map{"error": "Character ID is required"})
+	}
+	characterID, err := strconv.Atoi(characterIDStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid character ID"})
 	}
 
 	var character models.CharacterDetails
