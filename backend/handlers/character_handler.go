@@ -95,6 +95,73 @@ func CreateCharacter(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"message": "Character created successfully", "character_id": characterID})
 }
 
+func UpdateCharacter(c *fiber.Ctx) error {
+	db := config.GetDB()
+	conn, err := db.Acquire(context.Background())
+	if err != nil {
+		fmt.Println("Failed to acquire DB connection:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
+	}
+	defer conn.Release()
+
+	userID, ok := c.Locals("user_id").(int)
+	if !ok {
+		fmt.Println("ERROR: Failed to get user ID from context")
+		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	characterID := c.Params("id")
+	if characterID == "" {
+		fmt.Println("ERROR: Character ID not provided")
+		return c.Status(400).JSON(fiber.Map{"error": "Character ID is required"})
+	}
+
+	var character models.CharacterDetails
+	if err := c.BodyParser(&character); err != nil {
+		fmt.Println("ERROR: Invalid request body:", err)
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	var ownerID int
+	err = conn.QueryRow(context.Background(), "SELECT user_id FROM characters WHERE id = $1", characterID).Scan(&ownerID)
+	if err != nil {
+		fmt.Println("ERROR: Character not found or DB error:", err)
+		return c.Status(404).JSON(fiber.Map{"error": "Character not found"})
+	}
+
+	if ownerID != userID {
+		fmt.Println("ERROR: User does not own this character")
+		return c.Status(403).JSON(fiber.Map{"error": "You are not allowed to edit this character"})
+	}
+
+	tx, err := db.Begin(context.Background())
+	if err != nil {
+		fmt.Println("ERROR: Failed to start transaction:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Transaction error"})
+	}
+	defer tx.Rollback(context.Background())
+
+	_, err = tx.Exec(context.Background(),
+		"UPDATE characters SET name = $1, description = $2 WHERE id = $3",
+		character.Name, character.Description, characterID)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to update character:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update character"})
+	}
+
+	if err := InsertImage(tx, character.ProfileImage, config.ObjectTypeIDs["Character"], characterID, config.PurposeIDs["Profile"]); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update profile image"})
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		fmt.Println("ERROR: Failed to commit transaction:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Transaction commit failed"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Character updated successfully"})
+}
+
 func CreateRpgData(c *fiber.Ctx) error {
 	db := config.GetDB()
 	conn, err := db.Acquire(context.Background())
@@ -126,6 +193,60 @@ func CreateRpgData(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"message": "RPG Data stored successfully"})
+}
+
+func UpdateRpgData(c *fiber.Ctx) error {
+	db := config.GetDB()
+	conn, err := db.Acquire(context.Background())
+	if err != nil {
+		fmt.Println("Failed to acquire DB connection:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
+	}
+	defer conn.Release()
+
+	userID, ok := c.Locals("user_id").(int)
+	if !ok {
+		fmt.Println("ERROR: Failed to get user ID from context")
+		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	characterID := c.Params("id")
+	if characterID == "" {
+		fmt.Println("ERROR: Character ID not provided")
+		return c.Status(400).JSON(fiber.Map{"error": "Character ID is required"})
+	}
+
+	var ownerID int
+	err = conn.QueryRow(context.Background(), "SELECT user_id FROM characters WHERE id = $1", characterID).Scan(&ownerID)
+	if err != nil {
+		fmt.Println("ERROR: Character not found or DB error:", err)
+		return c.Status(404).JSON(fiber.Map{"error": "Character not found"})
+	}
+
+	if ownerID != userID {
+		fmt.Println("ERROR: User does not own this character")
+		return c.Status(403).JSON(fiber.Map{"error": "You are not allowed to edit this character"})
+	}
+
+	var rpgData models.RpgData
+	if err := c.BodyParser(&rpgData); err != nil {
+		fmt.Println("ERROR: Invalid RPG data:", err)
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid RPG data"})
+	}
+
+	_, err = conn.Exec(context.Background(),
+		`INSERT INTO rpg_data (character_id, race, class, lore, stats) 
+		 VALUES ($1, $2, $3, $4, $5) 
+		 ON CONFLICT (character_id) 
+		 DO UPDATE SET race = $2, class = $3, lore = $4, stats = $5`,
+		characterID, rpgData.Race, rpgData.CharacterClass, rpgData.Lore, rpgData.Stats)
+
+	if err != nil {
+		fmt.Println("ERROR: Failed to update RPG data:", err)
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update RPG data"})
+	}
+
+	return c.JSON(fiber.Map{"message": "RPG Data updated successfully"})
 }
 
 func GetCharacters(c *fiber.Ctx) error {

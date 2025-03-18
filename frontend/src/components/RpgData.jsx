@@ -7,7 +7,7 @@ export default function RpgData({ rpgData }) {
     <div className="rpg-data">
       <h3>RPG Details</h3>
       <p><strong>Race:</strong> {rpgData.race || "Unknown"}</p>
-      <p><strong>Class:</strong> {rpgData.class || "Unknown"}</p>
+      <p><strong>Class:</strong> {rpgData.character_class || "Unknown"}</p>
       <p><strong>Lore:</strong> {rpgData.lore || "No lore available"}</p>
 
       <h4>Statistics</h4>

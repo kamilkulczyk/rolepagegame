@@ -27,20 +27,67 @@ const fakeApi = {
   },  
   createCharacter: async (characterDetails, rpgData) => {
     const existingCharacters = JSON.parse(localStorage.getItem("characters")) || [];
+    const existingRpgData = JSON.parse(localStorage.getItem("rpgData")) || [];
 
     const newCharacter = {
-      id: Date.now(),
-      name: characterDetails.name,
-      description: characterDetails.description,
-      user_id: 1,
-      profile_picture: characterDetails.profile_picture,
-      rpg_data: rpgData,
+        id: Date.now(),
+        name: characterDetails.name,
+        description: characterDetails.description,
+        user_id: 1,
+        profile_picture: characterDetails.profile_picture,
     };
 
     const updatedCharacters = [...existingCharacters, newCharacter];
     localStorage.setItem("characters", JSON.stringify(updatedCharacters));
 
-    return newCharacter;
+    const newRpgData = {
+        id: Date.now(),
+        character_id: newCharacter.id,
+        ...rpgData,
+    };
+
+    const updatedRpgData = [...existingRpgData, newRpgData];
+    localStorage.setItem("rpgData", JSON.stringify(updatedRpgData));
+
+    return { ...newCharacter, rpg_data: newRpgData };
+  },
+  updateCharacter: async (characterId, characterDetails, rpgData) => {
+    const existingCharacters = JSON.parse(localStorage.getItem("characters")) || [];
+    const existingRpgData = JSON.parse(localStorage.getItem("rpgData")) || [];
+
+    const characterIndex = existingCharacters.findIndex(c => c.id === characterId);
+    if (characterIndex === -1) {
+        throw new Error("Character not found");
+    }
+
+    existingCharacters[characterIndex] = {
+        ...existingCharacters[characterIndex],
+        ...characterDetails,
+    };
+    localStorage.setItem("characters", JSON.stringify(existingCharacters));
+
+    const rpgDataIndex = existingRpgData.findIndex(rpg => rpg.character_id === characterId);
+
+    if (rpgDataIndex !== -1) {
+        existingRpgData[rpgDataIndex] = {
+            ...existingRpgData[rpgDataIndex],
+            ...rpgData,
+        };
+    } else {
+        const newRpgData = {
+            id: Date.now(),
+            character_id: characterId,
+            ...rpgData,
+        };
+        existingRpgData.push(newRpgData);
+    }
+
+    localStorage.setItem("rpgData", JSON.stringify(existingRpgData));
+
+    return {
+        ...existingCharacters[characterIndex],
+        rpg_data: existingRpgData.find(rpg => rpg.character_id === characterId) || null,
+    };
   },
 
   createItem: async (characterId, itemName) => {
@@ -223,7 +270,27 @@ const realApi = {
             throw { message: error.message };
         }
     }
+  },
+  updateCharacter: async (characterID, details, rpgData) => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+        await axios.put(`${API_URL}/characters/${characterID}`, details, { headers });
+        await axios.put(`${API_URL}/characters/${characterID}/rpg-data`, rpgData, { headers });
+
+        return { message: "Character updated successfully!" };
+    } catch (error) {
+        if (error.response) {
+            throw { status: error.response.status, data: error.response.data };
+        } else if (error.request) {
+            throw { message: "No response from server." };
+        } else {
+            throw { message: error.message };
+        }
+    }
 },
+
 
 };
 

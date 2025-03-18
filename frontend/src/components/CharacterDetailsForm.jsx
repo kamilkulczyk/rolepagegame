@@ -1,15 +1,22 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import "../styles/CharacterDetailsForm.css";
 
 const defaultImage = "https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ="
 
-export default function CharacterDetailsForm({ onDetailsChange }) {
+export default function CharacterDetailsForm({ characterDetails, onDetailsChange }) {
   const [details, setDetails] = useState({
     name: "",
     profile_image: "",
     description: "",
   });
 
+  useEffect(() => {
+    if (characterDetails) {
+      setDetails(characterDetails);
+    }
+  }, [characterDetails]);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedDetails = { ...details, [name]: value };
@@ -55,7 +62,4 @@ export default function CharacterDetailsForm({ onDetailsChange }) {
       </div>
     </div>
   );
-  
-  
-  
 }

@@ -20,6 +20,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-character" element={<CharacterCreation />} />
+          <Route path="/edit-character/:id" element={<CharacterCreation />} />
           <Route path="/create-item" element={<ItemCreation />} />
           <Route path="/characters/:id" element={<Character />} />
         </Routes>

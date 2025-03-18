@@ -5,6 +5,7 @@ import { ServerRouter, useNavigate } from "react-router-dom";
 import ItemCard from "../components/ItemCard";
 import "../styles/Dashboard.css";
 import CharacterView from "../components/CharacterView";
+import CharacterCard from "../components/CharacterCard";
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
@@ -60,7 +61,7 @@ export default function Profile() {
           {console.log(characters.length)}
           {characters.length > 0 ? (
             characters.map((character) => (
-              <CharacterView key={character.id} character={character} />
+              <CharacterCard key={character.id} character={character} isUserCharacter={true}/>
             ))
           ) : (
             <p className="no-characters">No characters available</p>
