@@ -12,7 +12,11 @@ export default function ObjectDetailsForm({ type = "character", objectDetails, o
 
   useEffect(() => {
     if (objectDetails) {
-      setFormDetails(objectDetails);
+      setFormDetails({
+        name: objectDetails?.name || "",  
+        profile_image: objectDetails?.profile_image || "",  
+        description: objectDetails?.description || "",  
+      });
     }
   }, [objectDetails]);
   

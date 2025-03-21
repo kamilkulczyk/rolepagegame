@@ -276,10 +276,10 @@ const realApi = {
     const headers = { Authorization: `Bearer ${token}` };
 
     try {
-        const charResponse = await axios.post(`${API_URL}/items`, details, { headers });
-        const characterID = charResponse.data.character_id;
+        const itemResponse = await axios.post(`${API_URL}/items`, details, { headers });
+        const itemID = itemResponse.data.item_id;
 
-        await axios.post(`${API_URL}/items/${characterID}/rpg-data`, rpgData, { headers });
+        await axios.post(`${API_URL}/items/${itemID}/rpg-data`, rpgData, { headers });
 
         return { message: "Item created successfully!" };
     } catch (error) {

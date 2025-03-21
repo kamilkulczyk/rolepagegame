@@ -11,7 +11,7 @@ export default function RpgDataForm({ type, fields, initialData, onDetailsChange
   useEffect(() => {
     if (initialData) {
       setFormData({
-        ...initialData,
+        ...fields.reduce((acc, { key }) => ({ ...acc, [key]: initialData[key] || "" }), {}),
         stats: Object.entries(initialData.stats || {}).map(([name, value]) => ({
           name,
           value,
@@ -66,7 +66,6 @@ export default function RpgDataForm({ type, fields, initialData, onDetailsChange
   return (
     <div className="rpg-data-form">
       <h3>{type} Details</h3>
-
       {fields.map(({ label, key, inputType }) => (
         <div key={key} className="form-group">
           {inputType === "textarea" ? (

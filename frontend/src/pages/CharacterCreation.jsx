@@ -67,7 +67,6 @@ export default function CharacterCreation() {
       <form onSubmit={handleSubmit} className="character-creation-content">
         
         <div className="character-forms">
-          {console.log("data: ", characterDetails)}
           <div className="character-form-section">
             <ObjectDetailsForm
               objectDetails={characterDetails}
@@ -79,7 +78,7 @@ export default function CharacterCreation() {
               type="Character"
               fields={[
                 { label: "Race", key: "race", inputType: "text" },
-                { label: "Class", key: "class", inputType: "text" },
+                { label: "Class", key: "character_class", inputType: "text" },
                 { label: "Lore", key: "lore", inputType: "textarea" },
               ]}
               initialData={rpgData}

@@ -39,7 +39,6 @@ func CreateItem(c *fiber.Ctx) error {
 	}
 	defer tx.Rollback(context.Background())
 
-	var itemID int
 	err = tx.QueryRow(context.Background(),
 		"INSERT INTO items (name, description, user_id) VALUES ($1, $2, $3) RETURNING id",
 		item.Name, item.Description, userID,
@@ -50,7 +49,7 @@ func CreateItem(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to insert item"})
 	}
 
-	if err := InsertImage(tx, item.ProfileImage, config.ObjectTypeIDs["Item"], itemID, config.PurposeIDs["Profile"]); err != nil {
+	if err := InsertImage(tx, item.ProfileImage, config.ObjectTypeIDs["Item"], item.ID, config.PurposeIDs["Profile"]); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign profile image"})
 	}
 
@@ -68,7 +67,7 @@ func CreateItem(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Transaction commit failed"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Item created successfully", "item_id": itemID})
+	return c.JSON(fiber.Map{"message": "Item created successfully", "item_id": item.ID})
 }
 
 func CreateItemRpgData(c *fiber.Ctx) error {

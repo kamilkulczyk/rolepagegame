@@ -74,7 +74,6 @@ export default function ItemCreation() {
               onDetailsChange={updateItemDetails} 
             />
           </div>
-          {console.log("rpg: ", rpgData)}
           <div className="character-form-section">
             <RpgDataForm
               type="Item"
