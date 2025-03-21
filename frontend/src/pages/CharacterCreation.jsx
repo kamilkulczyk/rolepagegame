@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../api";
 import { useLocation, useNavigate } from "react-router-dom";
-import CharacterDetailsForm from "../components/CharacterDetailsForm";
+import ObjectDetailsForm from "../components/ObjectDetailsForm";
 import RpgDataForm from "../components/RpgDataForm";
 import "../styles/CharacterCreation.css";
 
@@ -11,7 +11,6 @@ export default function CharacterCreation() {
 
   const existingCharacter = location.state?.character || null;
   const existingRpgData = location.state?.rpgData || null;
-  console.log("log: ", existingCharacter)
 
   const [characterDetails, setCharacterDetails] = useState(existingCharacter || {});
   const [rpgData, setRpgData] = useState(existingRpgData || {});
@@ -30,7 +29,6 @@ export default function CharacterCreation() {
     if (existingCharacter && !existingRpgData) {
       const fetchRpgData = async () => {
         try {
-          console.log("TEST!!!!!!", existingCharacter.id)
           const rpgDataResponse = await api.getRpgDataByCharacterID(existingCharacter.id);
           setRpgData(rpgDataResponse);
         } catch (error) {
@@ -69,23 +67,29 @@ export default function CharacterCreation() {
       <form onSubmit={handleSubmit} className="character-creation-content">
         
         <div className="character-forms">
+          {console.log("data: ", characterDetails)}
           <div className="character-form-section">
-            <CharacterDetailsForm 
-              characterDetails={characterDetails} 
-              onDetailsChange={updateCharacterDetails} 
+            <ObjectDetailsForm
+              objectDetails={characterDetails}
+              onDetailsChange={updateCharacterDetails}
             />
           </div>
-          {console.log("rpg: ", rpgData)}
           <div className="character-form-section">
-            <RpgDataForm 
-              rpgData={rpgData} 
-              onDetailsChange={updateRpgData} 
+            <RpgDataForm
+              type="Character"
+              fields={[
+                { label: "Race", key: "race", inputType: "text" },
+                { label: "Class", key: "class", inputType: "text" },
+                { label: "Lore", key: "lore", inputType: "textarea" },
+              ]}
+              initialData={rpgData}
+              onDetailsChange={updateRpgData}
             />
           </div>
         </div>
 
         <button type="submit" className="submit-btn" disabled={loading}>
-          {loading ? "Creating..." : (!existingCharacter ? "Create Character" : "Update Character")} 
+          {loading ? "Creating..." : (!existingCharacter ? "Create Character" : "Update Character")}
         </button>
       </form>
     </div>

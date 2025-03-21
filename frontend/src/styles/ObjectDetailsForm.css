@@ -1,5 +1,4 @@
-/* Container - Similar structure to RPG Data */
-.character-details-container {
+.details-container {
   background: #1e1e1e;
   padding: 20px;
   border-radius: 8px;
@@ -11,7 +10,7 @@
   gap: 20px;
 }
 
-.character-details-left {
+.details-left {
   flex: 1;
   min-width: 300px;
 }
@@ -35,8 +34,8 @@
   object-fit: cover;
 }
 
-.character-details-left input,
-.character-details-left textarea {
+.details-left input,
+.details-left textarea {
   width: 100%;
   padding: 8px;
   margin: 10px 0;
@@ -46,15 +45,13 @@
   color: white;
 }
 
-/* Limit Description Box */
-.character-details-left textarea {
+.details-left textarea {
   height: 80px;
   resize: none;
 }
 
-/* Makes it take full width when stacked */
 @media (max-width: 900px) {
-  .character-details-container {
+  .details-container {
     flex-direction: column;
   }
 }

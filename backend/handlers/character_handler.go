@@ -73,18 +73,17 @@ func CreateCharacter(c *fiber.Ctx) error {
 	}
 	defer tx.Rollback(context.Background())
 
-	var characterID int
 	err = tx.QueryRow(context.Background(),
 		"INSERT INTO characters (name, description, user_id) VALUES ($1, $2, $3) RETURNING id",
 		character.Name, character.Description, userID,
-	).Scan(&characterID)
+	).Scan(&character.ID)
 
 	if err != nil {
 		fmt.Println("ERROR: Failed to insert character:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to insert character"})
 	}
 
-	if err := InsertImage(tx, character.ProfileImage, config.ObjectTypeIDs["Character"], characterID, config.PurposeIDs["Profile"]); err != nil {
+	if err := InsertImage(tx, character.ProfileImage, config.ObjectTypeIDs["Character"], character.ID, config.PurposeIDs["Profile"]); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to assign profile image"})
 	}
 
@@ -93,7 +92,7 @@ func CreateCharacter(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Transaction commit failed"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Character created successfully", "character_id": characterID})
+	return c.JSON(fiber.Map{"message": "Character created successfully", "character_id": character.ID})
 }
 
 func UpdateCharacter(c *fiber.Ctx) error {

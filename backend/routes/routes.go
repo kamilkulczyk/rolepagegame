@@ -7,4 +7,5 @@ import (
 func SetupRoutes(app *fiber.App) {
   AuthRoutes(app)
   CharacterRoutes(app)
+  ItemRoutes(app)
 }

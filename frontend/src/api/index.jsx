@@ -1,4 +1,5 @@
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev ? "/fakeApi" : import.meta.env.VITE_API_URL;
@@ -21,7 +22,11 @@ const fakeApi = {
   getRpgDataByCharacterID: async (id) => {
     const rpgData = JSON.parse(localStorage.getItem("rpgData") || "[]");
     return rpgData.find(data => data.character_id == id) || null;
-  },  
+  },
+  getRpgDataByItemID: async (id) => {
+    const rpgData = JSON.parse(localStorage.getItem("itemRpgData") || "[]");
+    return rpgData.find(data => data.item_id == id) || null;
+  },
   getCharacters: async () => {
     return JSON.parse(localStorage.getItem("characters") || "[]");
   },  
@@ -89,13 +94,34 @@ const fakeApi = {
         rpg_data: existingRpgData.find(rpg => rpg.character_id === characterId) || null,
     };
   },
+  createItem: async (itemDetails, itemRpgData) => {
+    const existingItems = JSON.parse(localStorage.getItem("items")) || [];
+    const existingItemRpgData = JSON.parse(localStorage.getItem("itemRpgData")) || [];
 
-  createItem: async (characterId, itemName) => {
-    const newItem = { id: Math.random(), name: itemName };
-    let character = JSON.parse(localStorage.getItem("character"));
-    character.items.push(newItem);
-    localStorage.setItem("character", JSON.stringify(character));
-    return newItem;
+    const newItem = {
+        id: Date.now(),
+        name: itemDetails.name,
+        description: itemDetails.description,
+        user_id: 1,
+        profile_image: itemDetails.profile_image,
+    };
+
+    const updatedItems = [...existingItems, newItem];
+    localStorage.setItem("items", JSON.stringify(updatedItems));
+
+    const newItemRpgData = {
+        id: Date.now(),
+        item_id: newItem.id,
+        ...itemRpgData,
+    };
+
+    const updatedItemRpgData = [...existingItemRpgData, newItemRpgData];
+    localStorage.setItem("itemRpgData", JSON.stringify(updatedItemRpgData));
+
+    return { ...newItem, rpg_data: newItemRpgData };
+  },
+  getUserItems: async () => {
+    return JSON.parse(localStorage.getItem("items") || "[]");
   },
 };
 
@@ -164,6 +190,9 @@ const realApi = {
       return response.data;
     } catch (error) {
       if (error.response) {
+        if (error.response.status === 401) {
+          logout();
+        }
         throw {
           status: error.response.status,
           data: error.response.data,
@@ -220,7 +249,7 @@ const realApi = {
         };
       }
     }
-  },  
+  },
   getCharacters: async () => {
     try {
       const response = await axios.get(`${API_URL}/characters`);
@@ -242,14 +271,78 @@ const realApi = {
       }
     }
   },
-  createItem: async (characterId, itemName) => {
-    const res = await fetch(`${API_URL}/items`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ characterId, name: itemName }),
-    });
-    return res.json();
+  createItem: async (details, rpgData) => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+        const charResponse = await axios.post(`${API_URL}/items`, details, { headers });
+        const characterID = charResponse.data.character_id;
+
+        await axios.post(`${API_URL}/items/${characterID}/rpg-data`, rpgData, { headers });
+
+        return { message: "Item created successfully!" };
+    } catch (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            const { logout } = useContext(AuthContext); 
+            logout();
+          }
+          throw { status: error.response.status, data: error.response.data };
+        } else if (error.request) {
+          throw { message: "No response from server." };
+        } else {
+          throw { message: error.message };
+        }
+    }
   },
+  getUserItems: async () => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const response = await axios.get(`${API_URL}/user-items`, { headers });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          logout();
+        }
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        }
+      }
+    }
+  },
+  getRpgDataByItemID: async (characterID) => {
+    try {
+      const response = await axios.get(`${API_URL}/items/${characterID}/rpg-data`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        };
+      }
+    }
+  },  
   createCharacter: async (details, rpgData) => {
     const token = localStorage.getItem("token");
     const headers = { Authorization: `Bearer ${token}` };
@@ -263,11 +356,15 @@ const realApi = {
         return { message: "Character created successfully!" };
     } catch (error) {
         if (error.response) {
-            throw { status: error.response.status, data: error.response.data };
+          if (error.response.status === 401) {
+            const { logout } = useContext(AuthContext); 
+            logout();
+          }
+          throw { status: error.response.status, data: error.response.data };
         } else if (error.request) {
-            throw { message: "No response from server." };
+          throw { message: "No response from server." };
         } else {
-            throw { message: error.message };
+          throw { message: error.message };
         }
     }
   },
@@ -282,16 +379,18 @@ const realApi = {
         return { message: "Character updated successfully!" };
     } catch (error) {
         if (error.response) {
-            throw { status: error.response.status, data: error.response.data };
+          if (error.response.status === 401) {
+            const { logout } = useContext(AuthContext); 
+            logout();
+          }
+          throw { status: error.response.status, data: error.response.data };
         } else if (error.request) {
-            throw { message: "No response from server." };
+          throw { message: "No response from server." };
         } else {
-            throw { message: error.message };
+          throw { message: error.message };
         }
     }
-},
-
-
+  },
 };
 
 // Use fake API in development, real API in production

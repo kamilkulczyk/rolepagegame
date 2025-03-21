@@ -8,6 +8,7 @@ import ItemCreation from "./pages/ItemCreation";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile"
 import Character from "./pages/Character";
+import Item from "./pages/Item";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/edit-character/:id" element={<CharacterCreation />} />
           <Route path="/create-item" element={<ItemCreation />} />
           <Route path="/characters/:id" element={<Character />} />
+          <Route path="/items/:id" element={<Item />} />
         </Routes>
       </Router>
     </AuthProvider>
