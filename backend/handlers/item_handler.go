@@ -115,7 +115,7 @@ func GetRpgDataByItemID(c *fiber.Ctx) error {
 	itemID := c.Params("id")
 
 	row := conn.QueryRow(context.Background(), `
-		SELECT id, item_id, typ, lore, stats
+		SELECT id, item_id, type, lore, stats
 		FROM items_rpg_data
 		WHERE item_id = $1
 	`, itemID)
