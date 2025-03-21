@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
@@ -137,7 +136,7 @@ func GetRpgDataByItemID(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to scan Item RPG data"})
 	}
 
-	return c.JSON(rpgData)
+	return c.JSON(itemRpgData)
 }
 
 func GetItemsByUserID(c *fiber.Ctx) error {
@@ -183,7 +182,7 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan item"})
 		}
 
-		item[item.ID] = &item
+		items[item.ID] = &item
 	}
 
 	if err := rows.Err(); err != nil {
