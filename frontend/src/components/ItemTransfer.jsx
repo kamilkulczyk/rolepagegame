@@ -27,7 +27,6 @@ export default function ItemTransfer({ item }) {
     fetchUsers();
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -107,7 +106,7 @@ export default function ItemTransfer({ item }) {
         )}
       </div>
 
-      <button onClick={handleTransfer} disabled={!selectedUser || loading}>
+      <button className="transfer-button" onClick={handleTransfer} disabled={!selectedUser || loading}>
         {loading ? "Sending..." : "Send Item"}
       </button>
 

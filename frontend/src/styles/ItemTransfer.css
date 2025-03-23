@@ -3,7 +3,7 @@
     margin: 20px auto;
     text-align: center;
     font-family: Arial, sans-serif;
-    color: #ddd; /* Light text for dark theme */
+    color: #ddd;
   }
   
   .search-container {
@@ -18,15 +18,14 @@
     border-radius: 5px;
     font-size: 16px;
     outline: none;
-    background: #222; /* Dark background */
-    color: #ddd; /* Light text */
+    background: #222;
+    color: #ddd;
   }
   
   input[type="text"]:focus {
-    border-color: #007bff; /* Blue highlight */
+    border-color: #007bff;
   }
   
-  /* Dropdown */
   .dropdown-list {
     position: absolute;
     top: 100%;
@@ -34,7 +33,7 @@
     width: 100%;
     max-height: 200px;
     overflow-y: auto;
-    background: #1b1b1b; /* Dark background */
+    background: #1b1b1b;
     border: 1px solid #444;
     border-radius: 5px;
     list-style: none;
@@ -52,7 +51,7 @@
   }
   
   .dropdown-list li:hover {
-    background: #333; /* Slightly lighter on hover */
+    background: #333;
   }
   
   .dropdown-list .selected {
@@ -66,9 +65,8 @@
     color: gray;
   }
   
-  /* Button */
-  button {
-    width: 100%;
+  .transfer-button {
+    width: 50%;
     padding: 10px;
     margin-top: 10px;
     background: #007bff;
@@ -79,7 +77,7 @@
     font-size: 16px;
   }
   
-  button:disabled {
+  .transfer-button:disabled {
     background: #555;
     cursor: not-allowed;
   }
