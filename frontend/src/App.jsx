@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { useContext, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { setLogoutCallback } from "../api/index";
+import { AuthContext } from "./context/AuthContext";
+import { setLogoutCallback } from "./api/index";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
