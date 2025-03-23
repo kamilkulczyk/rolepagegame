@@ -5,7 +5,7 @@ const API_URL = isDev ? "/fakeApi" : import.meta.env.VITE_API_URL;
 
 let logoutCallback = null;
 
-const setLogoutCallback = (callback) => {
+export const setLogoutCallback = (callback) => {
   logoutCallback = callback;
 };
 
