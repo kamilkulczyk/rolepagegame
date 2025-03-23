@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
+    navigate("/");
   };
 
   return (

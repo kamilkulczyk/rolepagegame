@@ -154,7 +154,7 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 	}
 
 	rows, err := conn.Query(context.Background(), `
-		SELECT i.id, i.name, i.description,
+		SELECT i.id, i.name, i.description, i.user_id
 			COALESCE(pi.url, '') AS profile_image
 		FROM items i
 		LEFT JOIN image_assignments ia_profile 
@@ -176,7 +176,7 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 	for rows.Next() {
 		var item models.ItemDetails
 
-		if err := rows.Scan(&item.ID, &item.Name, &item.Description, &item.ProfileImage); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Description, &item.UserID, &item.ProfileImage); err != nil {
 			fmt.Println("ERROR: Failed to scan item:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan item"})
 		}
@@ -209,7 +209,7 @@ func GetItemByID(c *fiber.Ctx) error {
 	itemID := c.Params("id")
 
 	row := conn.QueryRow(context.Background(), `
-		SELECT i.id, i.name, i.description,
+		SELECT i.id, i.name, i.description, i.user_id
 			COALESCE(pi.url, '') AS profile_image
 		FROM items i
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
@@ -221,7 +221,7 @@ func GetItemByID(c *fiber.Ctx) error {
 
 	var item models.ItemDetails
 
-	if err := row.Scan(&item.ID, &item.Name, &item.Description, &item.ProfileImage); err != nil {
+	if err := row.Scan(&item.ID, &item.Name, &item.Description, &item.UserID, &item.ProfileImage); err != nil {
 		if err == pgx.ErrNoRows {
 			return c.Status(404).JSON(fiber.Map{"error": "Item not found"})
 		}
