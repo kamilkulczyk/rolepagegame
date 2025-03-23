@@ -231,3 +231,52 @@ func GetItemByID(c *fiber.Ctx) error {
 
 	return c.JSON(item)
 }
+
+func TransferItem(c *fiber.Ctx) error {
+    db := config.GetDB()
+    conn, err := db.Acquire(context.Background())
+    if err != nil {
+        fmt.Println("Failed to acquire DB connection:", err)
+        return c.Status(500).JSON(fiber.Map{"error": "Database connection error"})
+    }
+    defer conn.Release()
+
+    userID, ok := c.Locals("user_id").(int)
+    if !ok {
+        fmt.Println("ERROR: Failed to get user ID from context")
+        return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+    }
+
+    itemID := c.Params("id")
+
+    var transferData struct {
+        ReceiverID int `json:"receiver_id"`
+    }
+
+    if err := c.BodyParser(&transferData); err != nil {
+        return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+    }
+
+    result, err := conn.Exec(context.Background(), `
+        WITH updated AS (
+            UPDATE items
+            SET user_id = $3
+            WHERE id = $2 AND user_id = $1
+            RETURNING id
+        )
+        UPDATE item_ownership
+        SET character_id = NULL, equipment_slot = 1
+        WHERE item_id = (SELECT id FROM updated)
+    `, userID, itemID, transferData.ReceiverID)
+
+    if err != nil {
+        fmt.Println("ERROR: Failed to transfer item:", err)
+        return c.Status(500).JSON(fiber.Map{"error": "Failed to transfer item"})
+    }
+
+    if result.RowsAffected() == 0 {
+        return c.Status(403).JSON(fiber.Map{"error": "You do not own this item or item not found"})
+    }
+
+    return c.JSON(fiber.Map{"message": "Item transferred successfully"})
+}

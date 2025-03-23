@@ -1,10 +1,13 @@
 import { useParams, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import ItemView from "../components/ItemView";
 import { api } from "../api";
+import ItemTransfer from "../components/ItemTransfer";
+import { AuthContext } from "../context/AuthContext";
 
 const Item = () => {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const location = useLocation();
   const passedItem = location.state?.item || null;
 
@@ -52,6 +55,7 @@ const Item = () => {
     <div className="dashboard-container">
       <div className="dashboard-content">
         <ItemView item={item} rpgData={rpgData} />
+        {item.user_id === user?.id && <ItemTransfer item={item} />}
       </div>
     </div>
   );

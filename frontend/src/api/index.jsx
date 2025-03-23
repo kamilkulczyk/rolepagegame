@@ -123,6 +123,25 @@ const fakeApi = {
   getUserItems: async () => {
     return JSON.parse(localStorage.getItem("items") || "[]");
   },
+  transferItem: async (itemId, receiverId) => {
+    const existingItems = JSON.parse(localStorage.getItem("items")) || [];
+
+    const itemIndex = existingItems.findIndex(item => item.id === itemId);
+    if (itemIndex === -1) {
+        throw { message: "Item not found" };
+    }
+    existingItems[itemIndex] = { 
+        ...existingItems[itemIndex], 
+        user_id: receiverId 
+    };
+
+    localStorage.setItem("items", JSON.stringify(existingItems));
+
+    return { message: "Item successfully transferred", item: existingItems[itemIndex] };
+  },
+  getAllUsers: async () => {
+    return JSON.parse(localStorage.getItem("users") || "[]");
+  },
 };
 
 const realApi = {
@@ -191,6 +210,7 @@ const realApi = {
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
+          const { logout } = useContext(AuthContext); 
           logout();
         }
         throw {
@@ -305,6 +325,7 @@ const realApi = {
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
+          const { logout } = useContext(AuthContext); 
           logout();
         }
         throw {
@@ -389,6 +410,55 @@ const realApi = {
         } else {
           throw { message: error.message };
         }
+    }
+  },
+  transferItem: async (itemId, receiverId) => {
+    const token = localStorage.getItem("token");
+    const headers = { 
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+    };
+
+    try {
+        await axios.put(`${API_URL}/items/${itemId}/transfer`, 
+            { receiver_id: receiverId },
+            { headers }
+        );
+
+        return { message: "Item sent successfully!" };
+    } catch (error) {
+        if (error.response) {
+            if (error.response.status === 401) {
+                const { logout } = useContext(AuthContext); 
+                logout();
+            }
+            throw { status: error.response.status, data: error.response.data };
+        } else if (error.request) {
+            throw { message: "No response from server." };
+        } else {
+            throw { message: error.message };
+        }
+    }
+  },
+  getAllUsers: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/users`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        };
+      }
     }
   },
 };
