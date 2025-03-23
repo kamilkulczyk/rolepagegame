@@ -154,7 +154,7 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 	}
 
 	rows, err := conn.Query(context.Background(), `
-		SELECT i.id, i.name, i.description, i.user_id
+		SELECT i.id, i.name, i.description, i.user_id,
 			COALESCE(pi.url, '') AS profile_image
 		FROM items i
 		LEFT JOIN image_assignments ia_profile 
@@ -209,7 +209,7 @@ func GetItemByID(c *fiber.Ctx) error {
 	itemID := c.Params("id")
 
 	row := conn.QueryRow(context.Background(), `
-		SELECT i.id, i.name, i.description, i.user_id
+		SELECT i.id, i.name, i.description, i.user_id,
 			COALESCE(pi.url, '') AS profile_image
 		FROM items i
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
