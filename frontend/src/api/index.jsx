@@ -1,9 +1,13 @@
 import axios from "axios";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev ? "/fakeApi" : import.meta.env.VITE_API_URL;
+
+let logoutCallback = null;
+
+const setLogoutCallback = (callback) => {
+  logoutCallback = callback;
+};
 
 const fakeApi = {
   login: async (email, password) => {
@@ -211,8 +215,7 @@ const realApi = {
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
-          const { logout } = useContext(AuthContext); 
-          logout();
+          if (logoutCallback) logoutCallback();
         }
         throw {
           status: error.response.status,
@@ -306,8 +309,7 @@ const realApi = {
     } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {
-            const { logout } = useContext(AuthContext); 
-            logout();
+            if (logoutCallback) logoutCallback();
           }
           throw { status: error.response.status, data: error.response.data };
         } else if (error.request) {
@@ -326,8 +328,7 @@ const realApi = {
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
-          const { logout } = useContext(AuthContext); 
-          logout();
+          if (logoutCallback) logoutCallback();
         }
         throw {
           status: error.response.status,
@@ -379,8 +380,7 @@ const realApi = {
     } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {
-            const { logout } = useContext(AuthContext); 
-            logout();
+            if (logoutCallback) logoutCallback();
           }
           throw { status: error.response.status, data: error.response.data };
         } else if (error.request) {
@@ -402,8 +402,7 @@ const realApi = {
     } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {
-            const { logout } = useContext(AuthContext); 
-            logout();
+            if (logoutCallback) logoutCallback();
           }
           throw { status: error.response.status, data: error.response.data };
         } else if (error.request) {
@@ -430,8 +429,7 @@ const realApi = {
     } catch (error) {
         if (error.response) {
             if (error.response.status === 401) {
-                const { logout } = useContext(AuthContext); 
-                logout();
+              if (logoutCallback) logoutCallback();
             }
             throw { status: error.response.status, data: error.response.data };
         } else if (error.request) {
