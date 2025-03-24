@@ -57,7 +57,7 @@ func GetUsernameByID(c *fiber.Ctx) error {
 
 	userID := c.Params("id")
 
-	row := conn.QueryRow(context.Background(), "SELECT username FROM users WHERE id = $1", userID)
+	row := conn.QueryRow(context.Background(), "SELECT id, username FROM users WHERE id = $1", userID)
 	if err != nil {
 		fmt.Println("ERROR: Failed to fetch username:", err)
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch username"})
@@ -65,7 +65,7 @@ func GetUsernameByID(c *fiber.Ctx) error {
 
 	var user models.User
 
-	if err := row.Scan(&user.Username); err != nil {
+	if err := row.Scan(&user.ID, &user.Username); err != nil {
 		if err == pgx.ErrNoRows {
 			return c.Status(404).JSON(fiber.Map{"error": "User not found"})
 		}

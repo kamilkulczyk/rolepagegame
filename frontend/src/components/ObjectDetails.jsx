@@ -24,7 +24,7 @@ export default function ObjectDetails({ object, isCompact = false, type = "chara
 
           {owner && (
             <p className="character-owner">
-              Owner: <Link to={`/profile/${owner.id}`}>{owner.username}</Link>
+              Owner: <Link to={`/profile/${object.user_id}`}>{owner.username}</Link>
             </p>
           )}
         </>

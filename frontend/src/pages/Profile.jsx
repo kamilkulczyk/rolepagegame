@@ -73,7 +73,6 @@ export default function Profile() {
           )}
         </div>
         <div className="characters-grid">
-          {console.log(characters)}
           {characters.length > 0 ? (
             characters.map((character) => (
               <CharacterCard key={character.id} character={character} isUserCharacter={isOwnProfile} />
