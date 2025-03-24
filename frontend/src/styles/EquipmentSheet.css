@@ -3,8 +3,9 @@
     width: 100%;
     max-width: 500px;
     height: 500px;
-    background-size: cover;
+    background-size: contain;
     margin: 0 auto;
+    aspect-ratio: 1 / 1;
   }
   
   .slot {
@@ -20,3 +21,15 @@
     object-fit: contain;
   }
   
+  @media (max-width: 600px) {
+    .equipment-sheet {
+        max-width: 80%;
+        height: auto;
+    }
+    
+    .slot {
+      width: 30px;
+      height: 30px;
+      border: 1px dashed rgba(255, 255, 255, 0.5);
+    }
+  }

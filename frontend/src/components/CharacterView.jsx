@@ -4,11 +4,11 @@ import "../styles/CharacterView.css"
 import EquipmentSheet from "./EquipmentSheet";
 
 const slots = [ //todo: make a class that will store it or fetch it.
-  { id: "head", name: "Head", x: "224px", y: "10px" },
-  { id: "chest", name: "Chest", x: "224px", y: "120px" },
-  { id: "left_hand", name: "Left Hand", x: "20px", y: "120px" },
-  { id: "right_hand", name: "Right Hand", x: "430px", y: "120px" },
-  { id: "feet", name: "Feet", x: "220px", y: "440px" },
+  { id: "head", name: "Head", x: "45%", y: "2%" },
+  { id: "chest", name: "Chest", x: "45%", y: "24%" },
+  { id: "left_hand", name: "Left Hand", x: "4%", y: "24%" },
+  { id: "right_hand", name: "Right Hand", x: "86%", y: "24%" },
+  { id: "feet", name: "Feet", x: "44%", y: "88%" },
 ];
 
 const items = [];//todo: fetch items.
