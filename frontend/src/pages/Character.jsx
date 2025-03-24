@@ -18,43 +18,46 @@ const Character = () => {
 
   useEffect(() => {
     let isMounted = true;
-  
+
     const fetchCharacterData = async () => {
       setLoading(true);
       setError(null);
-  
-      try {
-        const characterPromise = character ? Promise.resolve(character) : api.getCharacterByID(id);
-        const rpgDataPromise = api.getRpgDataByCharacterID(id).catch(() => null);
-        const itemsPromise = items ? Promise.resolve(items) : api.getUserItems(character.user_id).catch(() => []);
-  
-        const [fetchedCharacter, fetchedRpgData, fetchedItems] = await Promise.all([characterPromise, rpgDataPromise, itemsPromise]);
 
+      try {
+        const fetchedCharacter = character || await api.getCharacterByID(id);
+        if (!fetchedCharacter) throw new Error("Character not found.");
+
+        const rpgDataPromise = api.getRpgDataByCharacterID(id).catch(() => null);
+        const itemsPromise = items ? Promise.resolve(items) : api.getUserItems(fetchedCharacter.user_id).catch(() => []);
+
+        const [fetchedRpgData, fetchedItems] = await Promise.all([rpgDataPromise, itemsPromise]);
+
+        let fetchedUser = null;
         if (fetchedCharacter?.user_id) {
-          const userPromise = api.getUserByID(fetchedCharacter.user_id).catch(() => null);
-          const fetchedUser = await userPromise;
-          if (isMounted) setOwner(fetchedUser);
+            fetchedUser = await api.getUserByID(fetchedCharacter.user_id).catch(() => null);
         }
 
         if (isMounted) {
-          setCharacter(fetchedCharacter || {});
-          setRpgData(fetchedRpgData || {});
-          setItems(fetchedItems || []);
+            setCharacter(fetchedCharacter);
+            setRpgData(fetchedRpgData || {});
+            setItems(fetchedItems?.filter(item => item.character_id === fetchedCharacter.id) || []);
+            setOwner(fetchedUser);
         }
       } catch (error) {
-        console.error("Error fetching character data:", error);
-        if (isMounted) setError(error.message || "Failed to fetch data.");
+          console.error("Error fetching character data:", error);
+          if (isMounted) setError(error.message || "Failed to fetch data.");
       } finally {
-        if (isMounted) setLoading(false);
+          if (isMounted) setLoading(false);
       }
     };
-  
+
     fetchCharacterData();
-  
+
     return () => {
-      isMounted = false;
+        isMounted = false;
     };
-  }, [id, character]);
+}, [id, character]);
+
 
   if (loading) return <p>Loading character...</p>;
   if (!character) return <p>Character not found</p>;
