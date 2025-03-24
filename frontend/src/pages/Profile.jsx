@@ -75,7 +75,7 @@ export default function Profile() {
         <div className="characters-grid">
           {characters.length > 0 ? (
             characters.map((character) => (
-              <CharacterCard key={character.id} character={character} isUserCharacter={isOwnProfile} />
+              <CharacterCard key={character.id} character={character} isUserCharacter={isOwnProfile} items={items}/>
             ))
           ) : (
             <p className="no-data">No characters available</p>

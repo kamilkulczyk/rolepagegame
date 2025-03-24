@@ -1,7 +1,8 @@
 .item-card {
   width: 100%;
-  max-width: 200px;
-  padding: 15px;
+  max-width: 110px;
+  margin-top: 10px;
+  padding: 5px;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   background-color: rgb(95, 95, 95);
@@ -10,15 +11,19 @@
 }
   
 .item-card img {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
   border-radius: 8px;
 }
 
-.item-link {
+.item-card a {
   text-decoration: none;
   color: white;
+}
+
+.item-card a:hover {
+  color: rgb(87, 146, 255);
 }
 
 .item-card.compact {

@@ -7,6 +7,8 @@ type ItemDetails struct {
   Name	   		    string   `json:"name"`
   Description       string   `json:"description"`
   UserID 			int      `json:"user_id"`
+  CharacterID 		int      `json:"character_id"`
+  EquipmentSlotID 	int      `json:"equipment_slot_id"`
   ProfileImage      string   `json:"profile_image"`
 }
 

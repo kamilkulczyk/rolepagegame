@@ -6,11 +6,11 @@ const EquipmentSheet = ({ slots, items }) => {
   return (
     <div className="equipment-sheet" style={{ backgroundImage: `url(${background})` }}>
       {slots.map((slot) => {
-        const item = items.find((item) => item.slot === slot.id);
+        const item = items?.find((item) => item.equipment_slot_id === slot.id);
 
         return (
           <div key={slot.id} className="slot" style={{ left: slot.x, top: slot.y }}>
-            {item ? <img src={item.image} alt={item.name} className="item-icon" /> : null}
+            {item ? <img src={item.profile_image} alt={item.name} className="item-icon" /> : null}
           </div>
         );
       })}

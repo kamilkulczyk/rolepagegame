@@ -4,11 +4,11 @@ import "../styles/CharacterCard.css";
 const defaultImage =
   "https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ=";
 
-const CharacterCard = ({ character, isCompact = false, isUserCharacter = false }) => {
+const CharacterCard = ({ character, isCompact = false, isUserCharacter = false, items = null }) => {
   return (
     <div className={`character-card ${isCompact ? "compact" : ""}`}>
       {isCompact ? (
-        <Link to={`/characters/${character.id}`} state={{ character }}>
+        <Link to={`/characters/${character.id}`} state={{ character, items }}>
           <img src={character.profile_image || defaultImage} alt={character.name} />
         </Link>
       ) : (
@@ -17,7 +17,7 @@ const CharacterCard = ({ character, isCompact = false, isUserCharacter = false }
 
       {!isCompact && (
         <h3 className="character-name">
-          <Link to={`/characters/${character.id}`} className="character-link" state={{ character }}>
+          <Link to={`/characters/${character.id}`} className="character-link" state={{ character, items }}>
             {character.name}
           </Link>
         </h3>

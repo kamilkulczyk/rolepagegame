@@ -156,9 +156,13 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 	}
 
 	rows, err := conn.Query(context.Background(), `
-		SELECT i.id, i.name, i.description, i.user_id,
-			COALESCE(pi.url, '') AS profile_image
+		SELECT 
+			i.id, i.name, i.description, i.user_id,
+			COALESCE(pi.url, '') AS profile_image,
+			COALESCE(io.character_id, 0) AS character_id,
+			COALESCE(io.equipment_slot, 0) AS equipment_slot
 		FROM items i
+		LEFT JOIN item_ownership io ON i.id = io.item_id
 		LEFT JOIN image_assignments ia_profile 
 			ON i.id = ia_profile.object_id 
 			AND ia_profile.object_type_id = $2
@@ -173,17 +177,17 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 	}
 	defer rows.Close()
 
-	items := make(map[int]*models.ItemDetails)
+	var items []models.ItemDetails
 
 	for rows.Next() {
 		var item models.ItemDetails
 
-		if err := rows.Scan(&item.ID, &item.Name, &item.Description, &item.UserID, &item.ProfileImage); err != nil {
+		if err := rows.Scan(&item.ID, &item.Name, &item.Description, &item.UserID, &item.ProfileImage, &item.CharacterID, &item.EquipmentSlotID); err != nil {
 			fmt.Println("ERROR: Failed to scan item:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan item"})
 		}
 
-		items[item.ID] = &item
+		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -191,12 +195,7 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to process items"})
 	}
 
-	var itemList []models.ItemDetails
-	for _, char := range items {
-		itemList = append(itemList, *char)
-	}
-
-	return c.JSON(itemList)
+	return c.JSON(items)
 }
 
 func GetItemByID(c *fiber.Ctx) error {
