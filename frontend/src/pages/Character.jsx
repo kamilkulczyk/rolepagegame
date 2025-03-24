@@ -10,6 +10,7 @@ const Character = () => {
 
   const [character, setCharacter] = useState(passedCharacter);
   const [rpgData, setRpgData] = useState(null);
+  const [owner, setOwner] = useState(null);
   const [loading, setLoading] = useState(!passedCharacter);
   const [error, setError] = useState(null);
 
@@ -25,7 +26,13 @@ const Character = () => {
         const rpgDataPromise = api.getRpgDataByCharacterID(id).catch(() => null);
   
         const [fetchedCharacter, fetchedRpgData] = await Promise.all([characterPromise, rpgDataPromise]);
-  
+
+        if (fetchedCharacter?.user_id) {
+          const userPromise = api.getUserByID(fetchedCharacter.user_id).catch(() => null);
+          const fetchedUser = await userPromise;
+          if (isMounted) setOwner(fetchedUser);
+        }
+
         if (isMounted) {
           setCharacter(fetchedCharacter || {});
           setRpgData(fetchedRpgData || {});
@@ -51,7 +58,7 @@ const Character = () => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-content">
-        <CharacterView character={character} rpgData={rpgData} />
+        <CharacterView character={character} rpgData={rpgData} owner={owner}/>
       </div>
     </div>
   );

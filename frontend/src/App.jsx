@@ -28,6 +28,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:id" element={<Profile />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/create-character" element={<CharacterCreation />} />
           <Route path="/edit-character/:id" element={<CharacterCreation />} />

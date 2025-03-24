@@ -264,7 +264,7 @@ func GetCharacters(c *fiber.Ctx) error {
 
 	rows, err := conn.Query(context.Background(), `
 		SELECT 
-			c.id, c.name, c.description,
+			c.id, c.name, c.description, c.user_id,
 			pi.url AS profile_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile 
@@ -286,7 +286,7 @@ func GetCharacters(c *fiber.Ctx) error {
 		var character models.CharacterDetails
 		var profileImage *string
 
-		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &profileImage); err != nil {
+		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.UserID, &profileImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
@@ -319,7 +319,7 @@ func GetCharacterByID(c *fiber.Ctx) error {
 	characterID := c.Params("id")
 
 	row := conn.QueryRow(context.Background(), `
-		SELECT c.id, c.name, c.description,
+		SELECT c.id, c.name, c.description, c.user_id,
 			COALESCE(pi.url, '') AS profile_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile ON c.id = ia_profile.object_id 
@@ -331,7 +331,7 @@ func GetCharacterByID(c *fiber.Ctx) error {
 
 	var character models.CharacterDetails
 
-	if err := row.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage); err != nil {
+	if err := row.Scan(&character.ID, &character.Name, &character.Description, &character.UserID, &character.ProfileImage); err != nil {
 		if err == pgx.ErrNoRows {
 			return c.Status(404).JSON(fiber.Map{"error": "Character not found"})
 		}
@@ -381,14 +381,15 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	}
 	defer conn.Release()
 
-	userID, ok := c.Locals("user_id").(int)
-	if !ok {
-		fmt.Println("ERROR: Failed to get user ID from context")
-		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+	userIDParam := c.Params("id")
+	userID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		fmt.Println("ERROR: Invalid user ID:", userIDParam)
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid user ID"})
 	}
 
 	rows, err := conn.Query(context.Background(), `
-		SELECT c.id, c.name, c.description,
+		SELECT c.id, c.name, c.description, c.user_id,
 			COALESCE(pi.url, '') AS profile_image
 		FROM characters c
 		LEFT JOIN image_assignments ia_profile 
@@ -410,7 +411,7 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	for rows.Next() {
 		var character models.CharacterDetails
 
-		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.ProfileImage); err != nil {
+		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.userID, &character.ProfileImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}

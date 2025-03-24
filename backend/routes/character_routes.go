@@ -15,5 +15,5 @@ func CharacterRoutes(app *fiber.App) {
   app.Get("/characters/:id/rpg-data", handlers.GetRpgDataByCharacterID)
   app.Get("/characters", handlers.GetCharacters)
   app.Get("/characters/:id", handlers.GetCharacterByID)
-  app.Get("/user-characters", middlewares.JWTMiddleware(), handlers.GetCharactersByUserID)
+  app.Get("/user-characters/:id", handlers.GetCharactersByUserID)
 }

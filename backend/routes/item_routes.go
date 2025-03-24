@@ -12,6 +12,6 @@ func ItemRoutes(app *fiber.App) {
   app.Post("/items/:id/rpg-data", middlewares.JWTMiddleware(), handlers.CreateItemRpgData)
   app.Get("/items/:id/rpg-data", handlers.GetRpgDataByItemID)
   app.Get("/items/:id", handlers.GetItemByID)
-  app.Get("/user-items", middlewares.JWTMiddleware(), handlers.GetItemsByUserID)
+  app.Get("/user-items/:id", handlers.GetItemsByUserID)
   app.Put("/items/:id/transfer", middlewares.JWTMiddleware(), handlers.TransferItem)
 }

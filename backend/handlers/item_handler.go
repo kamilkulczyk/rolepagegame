@@ -147,10 +147,11 @@ func GetItemsByUserID(c *fiber.Ctx) error {
 	}
 	defer conn.Release()
 
-	userID, ok := c.Locals("user_id").(int)
-	if !ok {
-		fmt.Println("ERROR: Failed to get user ID from context")
-		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+	userIDParam := c.Params("id")
+	userID, err := strconv.Atoi(userIDParam)
+	if err != nil {
+		fmt.Println("ERROR: Invalid user ID:", userIDParam)
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid user ID"})
 	}
 
 	rows, err := conn.Query(context.Background(), `

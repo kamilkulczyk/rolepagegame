@@ -16,8 +16,11 @@ const fakeApi = {
   register: async (username, email, password) => {
     return { token: "fake-jwt-token", user: { id: 1, username } };
   },
-  getUserCharacters: async () => {
-    return JSON.parse(localStorage.getItem("characters") || "[]");
+  getUserCharacters: async (id = null) => {
+    if(!id) id = 1;
+    const characters = JSON.parse(localStorage.getItem("characters") || "");
+    const userCharacters = characters.filter(char => char.user_id == id);
+    return userCharacters;
   },
   getCharacterByID: async (id) => {
     const characters = JSON.parse(localStorage.getItem("characters") || "");
@@ -125,8 +128,11 @@ const fakeApi = {
 
     return { ...newItem, rpg_data: newItemRpgData };
   },
-  getUserItems: async () => {
-    return JSON.parse(localStorage.getItem("items") || "[]");
+  getUserItems: async (id = null) => {
+    if(!id) id = 1;
+    const items = JSON.parse(localStorage.getItem("items") || "");
+    const userItems = items.filter(char => char.user_id == id);
+    return userItems;
   },
   transferItem: async (itemId, receiverId) => {
     const existingItems = JSON.parse(localStorage.getItem("items")) || [];
@@ -146,6 +152,11 @@ const fakeApi = {
   },
   getAllUsers: async () => {
     return JSON.parse(localStorage.getItem("users") || "[]");
+  },
+  getUserByID: async (userId) => {
+    const users = JSON.parse(localStorage.getItem("users") || "");
+    const user = users.find(char => char.id == userId);
+    return user;
   },
 };
 
@@ -206,30 +217,33 @@ const realApi = {
       }
     }
   },
-  getUserCharacters: async () => {
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
-    try {
-      const response = await axios.get(`${API_URL}/user-characters`, { headers });
-      return response.data;
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          if (logoutCallback) logoutCallback();
-        }
-        throw {
-          status: error.response.status,
-          data: error.response.data,
-        };
-      } else if (error.request) {
-        throw {
-          message: "No response from server.",
-        };
-      } else {
-        throw {
-          message: error.message,
-        }
+  getUserCharacters: async (id = null) => {
+    if (!id) {
+      const storedUser = localStorage.getItem("user");
+      
+      if (!storedUser) throw new Error("User ID is required but not found in local storage.");
+
+      try {
+          const parsedUser = JSON.parse(storedUser);
+          if (!parsedUser?.id) throw new Error("Invalid user data in local storage.");
+          id = parsedUser.id;
+      } catch (error) {
+          throw new Error("Failed to parse user data from local storage.");
       }
+    }
+
+    try {
+        const response = await axios.get(`${API_URL}/user-characters/${id}`);
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            if (error.response.status === 401 && logoutCallback) logoutCallback();
+            throw { status: error.response.status, data: error.response.data };
+        } else if (error.request) {
+            throw { message: "No response from server." };
+        } else {
+            throw { message: error.message };
+        }
     }
   },
   getCharacterByID: async (characterID) => {
@@ -319,11 +333,23 @@ const realApi = {
         }
     }
   },
-  getUserItems: async () => {
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
+  getUserItems: async (id = null) => {
+    if (!id) {
+      const storedUser = localStorage.getItem("user");
+      
+      if (!storedUser) throw new Error("User ID is required but not found in local storage.");
+
+      try {
+          const parsedUser = JSON.parse(storedUser);
+          if (!parsedUser?.id) throw new Error("Invalid user data in local storage.");
+          id = parsedUser.id;
+      } catch (error) {
+          throw new Error("Failed to parse user data from local storage.");
+      }
+    }
+    
     try {
-      const response = await axios.get(`${API_URL}/user-items`, { headers });
+      const response = await axios.get(`${API_URL}/user-items/${id}`);
       return response.data;
     } catch (error) {
       if (error.response) {
@@ -442,6 +468,27 @@ const realApi = {
   getAllUsers: async () => {
     try {
       const response = await axios.get(`${API_URL}/users`);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        throw {
+          status: error.response.status,
+          data: error.response.data,
+        };
+      } else if (error.request) {
+        throw {
+          message: "No response from server.",
+        };
+      } else {
+        throw {
+          message: error.message,
+        };
+      }
+    }
+  },
+  getUserByID: async (userId) => {
+    try {
+      const response = await axios.get(`${API_URL}/users/${userId}`);
       return response.data;
     } catch (error) {
       if (error.response) {
