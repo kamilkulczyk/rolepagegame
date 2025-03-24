@@ -411,7 +411,7 @@ func GetCharactersByUserID(c *fiber.Ctx) error {
 	for rows.Next() {
 		var character models.CharacterDetails
 
-		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.userID, &character.ProfileImage); err != nil {
+		if err := rows.Scan(&character.ID, &character.Name, &character.Description, &character.UserID, &character.ProfileImage); err != nil {
 			fmt.Println("ERROR: Failed to scan character:", err)
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to scan character"})
 		}
