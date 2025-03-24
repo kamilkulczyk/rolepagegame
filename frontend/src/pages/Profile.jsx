@@ -5,6 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 import "../styles/Profile.css";
 import CharacterCard from "../components/CharacterCard";
 import ItemCard from "../components/ItemCard";
+import ItemStorage from "../components/ItemStorage";
 
 export default function Profile() {
   const { id } = useParams();
@@ -36,7 +37,6 @@ export default function Profile() {
         setProfileUser(profileData);
 
         const fetchedCharacters = await api.getUserCharacters(profileData.id);
-        {console.log(fetchedCharacters)}
         setCharacters(fetchedCharacters || []);
 
         const fetchedItems = await api.getUserItems(profileData.id);
@@ -62,7 +62,7 @@ export default function Profile() {
   const isOwnProfile = !id || user?.id === profileUser.id;
 
   return (
-    <div className="dashboard-container">
+    <div className="profile-container">
       <p className="welcome-message">Welcome to {profileUser.username}'s profile!</p>
 
       <div className="section">
@@ -90,13 +90,7 @@ export default function Profile() {
             <button className="create-button" onClick={() => navigate("/create-item")}>+ Create Item</button>
           )}
         </div>
-        <div className="items-grid">
-          {items.length > 0 ? (
-            items.map((item) => <ItemCard key={item.id} item={item} />)
-          ) : (
-            <p className="no-data">No items available</p>
-          )}
-        </div>
+        <ItemStorage items={items}/>
       </div>
     </div>
   );

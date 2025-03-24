@@ -1,25 +1,33 @@
 .character-view {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 20px;
+  align-items: center;
+  min-width: 500px;
+}
+
+@media (min-width: 768px) {
+  .character-view {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
-  
-  @media (min-width: 768px) {
-    .character-view {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-  
-    .character-card {
-      flex: 1;
-      max-width: 100%;
-    }
-  
-    .rpg-data {
-      flex: 1;
-      max-width: 100%;
-    }
+
+  .left-panel {
+    flex: 1;
+    max-width: 50%;
   }
-  
+
+  .rpg-data {
+    flex: 1;
+    max-width: 50%;
+  }
+}
