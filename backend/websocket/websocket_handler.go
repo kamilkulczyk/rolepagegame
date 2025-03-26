@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
 )
 
 func HandleConnection(c *websocket.Conn) {
@@ -29,5 +28,6 @@ func HandleConnection(c *websocket.Conn) {
 			fmt.Println("❌ Error reading message:", err)
 			break
 		}
+		fmt.Println("📩 Received from", userID, ":", string(message)) //only for now
 	}
 }

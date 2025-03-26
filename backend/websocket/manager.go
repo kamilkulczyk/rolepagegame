@@ -7,7 +7,7 @@ import (
 )
 
 var clients = make(map[string]*websocket.Conn)
-var mutex = sync.Mutex()
+var mutex = sync.Mutex
 
 func AddClient(userID string, conn *websocket.Conn) {
 	mutex.Lock()
