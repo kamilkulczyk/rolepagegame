@@ -2,10 +2,10 @@ package routes
 
 import (
   "github.com/gofiber/fiber/v2"
-  "github.com/kamilkulczyk/rolepagegame/handlers"
+  "github.com/gofiber/contrib/websocket"
   "github.com/kamilkulczyk/rolepagegame/websocket"
 )
 
 func WebsocketRoutes(app *fiber.App) {
-  app.Get("/ws", websocket.HandleConnection)
+  app.Get("/ws", websocket.New(websocket.HandleConnection))
 }
