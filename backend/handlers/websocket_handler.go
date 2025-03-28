@@ -39,7 +39,7 @@ func SendMessage(recipientID int, message string) {
 	if exists {
 		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
 		if err != nil {
-			log.Println("Error sending message:", err)
+			fmt.Println("Error sending message:", err)
 		}
 	}
 }
@@ -47,7 +47,7 @@ func SendMessage(recipientID int, message string) {
 func HandleConnection(c *websocket.Conn) {
 	userID, ok := c.Locals("user_id").(int)
 	if !ok {
-		log.Println("❌ ERROR: Failed to get user ID from JWT")
+		fmt.Println("❌ ERROR: Failed to get user ID from JWT")
 		c.Close()
 		return
 	}
@@ -55,7 +55,7 @@ func HandleConnection(c *websocket.Conn) {
 	recipientIDStr := c.Query("recipient_id")
 	recipientID, err := strconv.Atoi(recipientIDStr)
 	if err != nil {
-		log.Println("❌ ERROR: Invalid recipient_id")
+		fmt.Println("❌ ERROR: Invalid recipient_id")
 		c.Close()
 		return
 	}
@@ -77,6 +77,6 @@ func HandleConnection(c *websocket.Conn) {
 			continue
 		}
 
-		SendMessage(message.RecipientID, message.Text)
+		SendMessage(message.RecipientID, message.Message)
 	}
 }
