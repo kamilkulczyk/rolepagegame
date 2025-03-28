@@ -2,6 +2,7 @@ import axios from "axios";
 
 const isDev = import.meta.env.MODE === "development";
 const API_URL = isDev ? "/fakeApi" : import.meta.env.VITE_API_URL;
+const WS_URL = API_URL.replace(/^http/, "ws");
 
 let logoutCallback = null;
 
@@ -157,6 +158,48 @@ const fakeApi = {
     const users = JSON.parse(localStorage.getItem("users") || "");
     const user = users.find(char => char.id == userId);
     return user;
+  },
+  getMessages: async (userId) => {
+    const messages = JSON.parse(localStorage.getItem("messages") || "");
+    const userMessages = messages.filter(char => char.recipientId == userId);
+    return userMessages;
+  },
+  sendMessage: async (_, recipientId, message) => {
+    const messages = JSON.parse(localStorage.getItem("messages")) || [];
+
+    const newMessage = {
+      senderId : 1,
+      recipientId,
+      message,
+      timestamp: new Date().toISOString(),
+    };
+
+    const updatedMessages = [...messages, newMessage];
+    localStorage.setItem("messages", JSON.stringify(updatedMessages));
+    return newMessage;
+  },
+  createWebSocket: (userId, onMessageReceived) => {
+    console.log(`🟢 [FAKE WS] Connected to chat for user ${userId}`);
+
+    const interval = setInterval(() => {
+      const messages = JSON.parse(localStorage.getItem("messages")) || {};
+      const newMessages = messages[userId] || [];
+
+      if (newMessages.length > 0) {
+        onMessageReceived(newMessages[newMessages.length - 1]);
+      }
+    }, 2000);
+
+    return {
+      send: (messageObj) => {
+        console.log("📩 [FAKE WS] Sent message:", messageObj);
+        api.sendMessage(messageObj.recipient_id, messageObj.message);
+      },
+      close: () => {
+        console.log(`🔴 [FAKE WS] Disconnected from user ${userId}`);
+        clearInterval(interval);
+      },
+    };
   },
 };
 
@@ -505,6 +548,38 @@ const realApi = {
           message: error.message,
         };
       }
+    }
+  },
+  getMessages: async (userId) => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+
+    try {
+      const response = await axios.get(`${API_URL}/messages/${userId}`, { headers });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      return [];
+    }
+  },
+  createWebSocket: (userId, onMessageReceived) => {
+    const socket = new WebSocket(`${WS_URL}/ws?recipient_id=${userId}`);
+
+    socket.onmessage = (event) => {
+      const receivedMessage = JSON.parse(event.data);
+      onMessageReceived(receivedMessage);
+    };
+
+    socket.onerror = (error) => console.error("WebSocket error:", error);
+    socket.onclose = () => console.log("WebSocket closed");
+
+    return socket;
+  },
+  sendMessage: (socket, recipientId, message) => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ recipient_id: recipientId, message }));
+    } else {
+      console.error("WebSocket is not open!");
     }
   },
 };

@@ -1,0 +1,16 @@
+.conversation-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 90px; /* Match navbar height */
+    background-color: #1d1d1d;
+    min-height: 100vh;
+    color: white;
+  }
+  
+  .conversation-page h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  

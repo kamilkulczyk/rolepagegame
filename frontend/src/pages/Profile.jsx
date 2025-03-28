@@ -4,7 +4,6 @@ import { api } from "../api";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/Profile.css";
 import CharacterCard from "../components/CharacterCard";
-import ItemCard from "../components/ItemCard";
 import ItemStorage from "../components/ItemStorage";
 
 export default function Profile() {
@@ -91,6 +90,11 @@ export default function Profile() {
           )}
         </div>
         <ItemStorage items={items}/>
+      </div>
+      <div className="section-header">
+        {!isOwnProfile && (
+          <button className="create-button" onClick={() => navigate(`/chat/${profileUser.id}`)}>Send message</button>
+        )}
       </div>
     </div>
   );

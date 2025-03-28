@@ -12,6 +12,7 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile"
 import Character from "./pages/Character";
 import Item from "./pages/Item";
+import Conversation from "./pages/Conversation";
 
 export default function App() {
   const { logout } = useContext(AuthContext);
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/create-item" element={<ItemCreation />} />
           <Route path="/characters/:id" element={<Character />} />
           <Route path="/items/:id" element={<Item />} />
+          <Route path="/chat/:id" element={<Conversation />} />
         </Routes>
       </Router>
     </AuthProvider>
