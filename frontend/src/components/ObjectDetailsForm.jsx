@@ -35,7 +35,7 @@ export default function ObjectDetailsForm({ type = "character", objectDetails, o
         <label>{capitalizedType} Name:</label>
         <input
           type="text"
-          maxLength="20"
+          maxLength="25"
           name="name"
           placeholder={`${capitalizedType} Name`}
           value={formDetails.name}
