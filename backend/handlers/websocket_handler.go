@@ -77,6 +77,6 @@ func HandleConnection(c *websocket.Conn) {
 			continue
 		}
 
-		SendMessage(message.RecipientID, message.Message)
+		SendMessage(recipientID, message.Message)
 	}
 }
