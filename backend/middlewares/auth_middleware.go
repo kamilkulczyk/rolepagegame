@@ -23,35 +23,42 @@ func init() {
 
 func JWTMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		tokenString := c.Get("Authorization")
+		var tokenString string
 
-		if tokenString == "" {
-			fmt.Println("ERROR: No Authorization header found")
-			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+		if websocket.IsWebSocketUpgrade(c) {
+			protocols := c.GetReqHeaders()["Sec-WebSocket-Protocol"]
+			if len(protocols) > 0 {
+				tokenString = protocols[0]
+			}
+		} else {
+			tokenString = c.Get("Authorization")
+			if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+				tokenString = tokenString[7:]
+			}
 		}
 
-		// Remove "Bearer " prefix if present
-		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
-			tokenString = tokenString[7:]
+		if tokenString == "" {
+			fmt.Println("❌ ERROR: No Authorization token found")
+			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			return []byte(secretKey), nil
 		})
 		if err != nil || !token.Valid {
-			fmt.Println("ERROR: Invalid JWT Token:", err)
+			fmt.Println("❌ ERROR: Invalid JWT Token:", err)
 			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			fmt.Println("ERROR: Failed to parse claims")
+			fmt.Println("❌ ERROR: Failed to parse claims")
 			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 
 		userID, ok := claims["user_id"].(float64)
 		if !ok {
-			fmt.Println("ERROR: user_id missing or invalid in claims:", claims)
+			fmt.Println("❌ ERROR: user_id missing or invalid in claims:", claims)
 			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
 		}
 
@@ -62,8 +69,7 @@ func JWTMiddleware() fiber.Handler {
 		case float64:
 			isAdmin = v == 1
 		default:
-			fmt.Println("ERROR: is_admin missing or invalid in claims:", claims)
-			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+			fmt.Println("⚠️ WARNING: is_admin missing or invalid in claims:", claims)
 		}
 
 		c.Locals("user_id", int(userID))
@@ -72,6 +78,7 @@ func JWTMiddleware() fiber.Handler {
 		return c.Next()
 	}
 }
+
 
 func OptionalJWTMiddleware() fiber.Handler {
 		return func(c *fiber.Ctx) error {

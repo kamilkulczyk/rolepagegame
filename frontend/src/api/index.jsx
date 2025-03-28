@@ -565,19 +565,21 @@ const realApi = {
   createWebSocket: (userId, onMessageReceived) => {
     const token = localStorage.getItem("token");
 
-    const socket = new WebSocket(`${WS_URL}/ws?recipient_id=${userId}&token=${token}`);
+    const socket = new WebSocket(WS_URL + "/ws?recipient_id=" + userId, [token]);
+
+    socket.onopen = () => console.log("✅ WebSocket connected");
 
     socket.onmessage = (event) => {
       try {
         const receivedMessage = JSON.parse(event.data);
         onMessageReceived(receivedMessage);
       } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
+        console.error("❌ Error parsing WebSocket message:", error);
       }
     };
 
-    socket.onerror = (error) => console.error("WebSocket error:", error);
-    socket.onclose = () => console.log("WebSocket closed");
+    socket.onerror = (error) => console.error("❌ WebSocket error:", error);
+    socket.onclose = () => console.log("❌ WebSocket closed");
 
     return socket;
   },
