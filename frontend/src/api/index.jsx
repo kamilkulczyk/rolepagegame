@@ -555,11 +555,16 @@ const realApi = {
     const headers = { Authorization: `Bearer ${token}` };
 
     try {
-      const response = await axios.get(`${API_URL}/messages/${userId}`, { headers });
-      return response.data;
+        const response = await axios.get(`${API_URL}/messages/${userId}`, { headers });
+        if (Array.isArray(response.data)) {
+            return response.data;
+        } else {
+            console.warn("Server returned non-array response:", response.data);
+            return [];
+        }
     } catch (error) {
-      console.error("Error fetching messages:", error);
-      return [];
+        console.error("Error fetching messages:", error);
+        return [];
     }
   },
   createWebSocket: async (onMessageReceived) => {
