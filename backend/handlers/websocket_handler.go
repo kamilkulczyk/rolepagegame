@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofiber/contrib/websocket"
 
-	// "github.com/kamilkulczyk/rolepagegame/models"
+	"github.com/kamilkulczyk/rolepagegame/models"
 )
 
 type SafeClients struct {
@@ -32,7 +32,7 @@ func RemoveClient(userID int) {
 	safeClients.mu.Unlock()
 }
 
-func SendMessage(recipientID int, message string) {
+func SendMessage(recipientID int, message models.Message) {
 	safeClients.mu.Lock()
 	conn, exists := safeClients.clients[recipientID]
 	safeClients.mu.Unlock()
@@ -69,18 +69,18 @@ func HandleConnection(c *websocket.Conn) {
 			break
 		}
 
-		var chatMessage ChatMessage
-		err = json.Unmarshal(msg, &chatMessage)
+		var message models.Message
+		err = json.Unmarshal(msg, &message)
 		if err != nil {
 			fmt.Println("❌ Error: Invalid JSON format:", err)
 			continue
 		}
 
-		// err = database.StoreMessage(chatMessage.SenderID, chatMessage.RecipientID, chatMessage.Message)
+		// err = database.StoreMessage(message.SenderID, message.RecipientID, message.Message)
 		// if err != nil {
 		// 	fmt.Println("❌ Error storing message in database:", err)
 		// }
 
-		SendMessage(chatMessage.RecipientID, chatMessage)
+		SendMessage(message.RecipientID, message)
 	}
 }
