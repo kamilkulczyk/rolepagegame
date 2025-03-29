@@ -8,6 +8,6 @@ import (
 )
 
 func ChatRoutes(app *fiber.App) {
-  app.Post("/connect-ws", handlers.ConnectWS)
+  app.Get("/connect-ws", handlers.ConnectWS)
   app.Get("/messages/:id", middlewares.JWTMiddleware(), handlers.FetchMessages)
 }
