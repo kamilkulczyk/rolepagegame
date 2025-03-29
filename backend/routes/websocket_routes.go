@@ -9,6 +9,5 @@ import (
 )
 
 func WebsocketRoutes(app *fiber.App) {
-  app.Use("/ws", middlewares.JWTMiddleware())
   app.Get("/ws", websocket.New(handlers.HandleConnection))
 }

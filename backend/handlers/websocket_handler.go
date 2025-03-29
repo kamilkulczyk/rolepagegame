@@ -8,7 +8,7 @@ import (
 
 	"github.com/gofiber/contrib/websocket"
 
-	"github.com/kamilkulczyk/rolepagegame/models"
+	// "github.com/kamilkulczyk/rolepagegame/models"
 )
 
 type SafeClients struct {
@@ -37,25 +37,24 @@ func SendMessage(recipientID int, message string) {
 	conn, exists := safeClients.clients[recipientID]
 	safeClients.mu.Unlock()
 	if exists {
-		err := conn.WriteMessage(websocket.TextMessage, []byte(message))
+		byteMessage, err := json.Marshal(message)
 		if err != nil {
-			fmt.Println("Error sending message:", err)
+			fmt.Println("❌ Error marshalling message:", err)
+			return
+		}
+
+		err = conn.WriteMessage(websocket.TextMessage, byteMessage)
+		if err != nil {
+			fmt.Println("❌ Error sending message:", err)
 		}
 	}
 }
 
 func HandleConnection(c *websocket.Conn) {
-	userID, ok := c.Locals("user_id").(int)
-	if !ok {
-		fmt.Println("❌ ERROR: Failed to get user ID from JWT")
-		c.Close()
-		return
-	}
-
-	recipientIDStr := c.Query("recipient_id")
-	recipientID, err := strconv.Atoi(recipientIDStr)
+	userIDStr := c.Query("user_id")
+	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
-		fmt.Println("❌ ERROR: Invalid recipient_id")
+		fmt.Println("❌ ERROR: Invalid user_id")
 		c.Close()
 		return
 	}
@@ -70,13 +69,18 @@ func HandleConnection(c *websocket.Conn) {
 			break
 		}
 
-		var message models.Message
-		err = json.Unmarshal(msg, &message)
+		var chatMessage ChatMessage
+		err = json.Unmarshal(msg, &chatMessage)
 		if err != nil {
-			fmt.Println("❌ Error: Invalid JSON format")
+			fmt.Println("❌ Error: Invalid JSON format:", err)
 			continue
 		}
 
-		SendMessage(recipientID, message.Message)
+		// err = database.StoreMessage(chatMessage.SenderID, chatMessage.RecipientID, chatMessage.Message)
+		// if err != nil {
+		// 	fmt.Println("❌ Error storing message in database:", err)
+		// }
+
+		SendMessage(chatMessage.RecipientID, chatMessage)
 	}
 }

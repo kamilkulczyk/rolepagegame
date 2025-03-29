@@ -562,31 +562,47 @@ const realApi = {
       return [];
     }
   },
-  createWebSocket: (userId, onMessageReceived) => {
+  createWebSocket: async (onMessageReceived) => {
     const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
 
     if (!token) {
-        console.error("❌ No JWT token found in localStorage");
-        return;
+      console.error("❌ No JWT token found in localStorage");
+      return null;
     }
 
-    const socket = new WebSocket(`${WS_URL}/ws?recipient_id=${userId}&token=${token}`);
+    try {
+      const response = await fetch("/connect-ws", {
+        headers: headers,
+      });
 
-    socket.onopen = () => console.log("✅ WebSocket connected");
+      if (!response.ok) {
+        console.error("❌ Failed to get WebSocket connection details");
+        return null;
+      }
 
-    socket.onmessage = (event) => {
+      const data = await response.json();
+      const socket = new WebSocket(`${WS_URL}/ws?user_id=${data.userID}&connection_id=${data.connectionID}`);
+
+      socket.onopen = () => console.log("✅ WebSocket connected");
+
+      socket.onmessage = (event) => {
         try {
-            const receivedMessage = JSON.parse(event.data);
-            onMessageReceived(receivedMessage);
+          const receivedMessage = JSON.parse(event.data);
+          onMessageReceived(receivedMessage);
         } catch (error) {
-            console.error("❌ Error parsing WebSocket message:", error);
+          console.error("❌ Error parsing WebSocket message:", error);
         }
-    };
+      };
 
-    socket.onerror = (error) => console.error("❌ WebSocket error:", error);
-    socket.onclose = () => console.log("❌ WebSocket closed");
+      socket.onerror = (error) => console.error("❌ WebSocket error:", error);
+      socket.onclose = () => console.log("❌ WebSocket closed");
 
-    return socket;
+      return socket;
+    } catch (error) {
+      console.error("Error creating WebSocket:", error);
+      return null;
+    }
   },
   sendMessage: (socket, recipientId, message) => {
     if (socket && socket.readyState === WebSocket.OPEN) {

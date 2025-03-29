@@ -6,10 +6,23 @@ import (
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 
 	"github.com/kamilkulczyk/rolepagegame/config"
 	"github.com/kamilkulczyk/rolepagegame/models"
 )
+
+func ConnectWS(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(int)
+	if !ok {
+			fmt.Println("ERROR: Failed to get user ID from context")
+			return c.Status(401).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+
+	connectionID := uuid.New().String()
+
+	return c.JSON(fiber.Map{"userID": userID, "connectionID": connectionID})
+}
 
 func FetchMessages(c *fiber.Ctx) error {
 	db := config.GetDB()
