@@ -10,4 +10,5 @@ func SetupRoutes(app *fiber.App) {
   ItemRoutes(app)
   UserRoutes(app)
   WebsocketRoutes(app)
+  ChatRoutes(app)
 }
