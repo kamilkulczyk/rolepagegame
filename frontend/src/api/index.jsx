@@ -565,17 +565,22 @@ const realApi = {
   createWebSocket: (userId, onMessageReceived) => {
     const token = localStorage.getItem("token");
 
-    const socket = new WebSocket(WS_URL + "/ws?recipient_id=" + userId, [token]);
+    if (!token) {
+        console.error("❌ No JWT token found in localStorage");
+        return;
+    }
+
+    const socket = new WebSocket(`${WS_URL}/ws?recipient_id=${userId}&token=${token}`);
 
     socket.onopen = () => console.log("✅ WebSocket connected");
 
     socket.onmessage = (event) => {
-      try {
-        const receivedMessage = JSON.parse(event.data);
-        onMessageReceived(receivedMessage);
-      } catch (error) {
-        console.error("❌ Error parsing WebSocket message:", error);
-      }
+        try {
+            const receivedMessage = JSON.parse(event.data);
+            onMessageReceived(receivedMessage);
+        } catch (error) {
+            console.error("❌ Error parsing WebSocket message:", error);
+        }
     };
 
     socket.onerror = (error) => console.error("❌ WebSocket error:", error);
