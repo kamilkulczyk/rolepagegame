@@ -563,6 +563,7 @@ const realApi = {
     }
   },
   createWebSocket: async (onMessageReceived) => {
+    console.log("WS_URL:", WS_URL)
     const token = localStorage.getItem("token");
     const headers = { Authorization: `Bearer ${token}` };
 
