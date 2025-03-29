@@ -598,7 +598,13 @@ const realApi = {
 
       return socket;
     } catch (error) {
-      console.error("Error creating WebSocket:", error);
+      if (error.response) {
+          console.error("❌ Error creating WebSocket:", error.response.status, error.response.data);
+      } else if (error.request) {
+          console.error("❌ Error creating WebSocket: No response received");
+      } else {
+          console.error("❌ Error creating WebSocket:", error.message);
+      }
       return null;
     }
   },
