@@ -572,9 +572,7 @@ const realApi = {
     }
 
     try {
-      const response = await fetch(`${API_URL}/connect-ws`, {
-        headers: headers,
-      });
+      const response = await axios.get(`${API_URL}/connect-ws`, { headers });
 
       if (!response.ok) {
         console.error("❌ Failed to get WebSocket connection details");
