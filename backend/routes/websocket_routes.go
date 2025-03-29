@@ -5,7 +5,6 @@ import (
   "github.com/gofiber/contrib/websocket"
 
   "github.com/kamilkulczyk/rolepagegame/handlers"
-  "github.com/kamilkulczyk/rolepagegame/middlewares"
 )
 
 func WebsocketRoutes(app *fiber.App) {
