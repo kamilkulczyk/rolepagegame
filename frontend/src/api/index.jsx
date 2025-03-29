@@ -563,7 +563,6 @@ const realApi = {
     }
   },
   createWebSocket: async (onMessageReceived) => {
-    console.log("WS_URL:", WS_URL)
     const token = localStorage.getItem("token");
     const headers = { Authorization: `Bearer ${token}` };
 
@@ -573,7 +572,7 @@ const realApi = {
     }
 
     try {
-      const response = await fetch("/connect-ws", {
+      const response = await fetch(`${API_URL}/connect-ws`, {
         headers: headers,
       });
 
